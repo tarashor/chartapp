@@ -11,7 +11,7 @@ import android.util.AttributeSet;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class TelegramChart extends Chart<DateToIntChartData> {
+public class TelegramChart extends Chart<ChartData> {
     private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
     private float[] line;
     private Matrix transformMatrix;

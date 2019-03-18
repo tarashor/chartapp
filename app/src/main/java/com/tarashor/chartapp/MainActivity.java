@@ -10,17 +10,23 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.tarashor.chartapp.models.Chart;
+import com.tarashor.chartapp.models.ChartToChartDataConverter;
+import com.tarashor.chartlib.ChartData;
 import com.tarashor.chartlib.DateToIntChartData;
 import com.tarashor.chartlib.Line;
 import com.tarashor.chartlib.TelegramChart;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     private TelegramChart telegramChart;
+    private int chartIndex = 0;
+    private List<Chart> charts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
                 setData(100, 100);
             }
         });
+        ChartJsonParser parser = new ChartJsonParser();
+        charts = parser.parseColumns(this);
     }
 
 
@@ -56,25 +64,31 @@ public class MainActivity extends AppCompatActivity {
 //
 //        telegramChart.setData(chartData);
 
-        Date[] dates = new Date[3];
-        Integer[] yValues = new Integer[3];
+//        Date[] dates = new Date[3];
+//        Integer[] yValues = new Integer[3];
+//
+//        Calendar calendar = Calendar.getInstance();
+//        dates[0] = calendar.getTime();
+//        calendar.add(Calendar.HOUR, 100);
+//        dates[1] = calendar.getTime();
+//        calendar.add(Calendar.HOUR, 100);
+//        dates[2] = calendar.getTime();
+//        yValues[0] = 100;
+//        yValues[1] = 500;
+//        yValues[2] = 300;
+//
+//
+//        Line<Integer> line = new Line<>(yValues, "#FF0000");
+//
+//        DateToIntChartData chartData = new DateToIntChartData(dates, new Line[]{line});
+//
+//        telegramChart.setData(chartData);
 
-        Calendar calendar = Calendar.getInstance();
-        dates[0] = calendar.getTime();
-        calendar.add(Calendar.HOUR, 100);
-        dates[1] = calendar.getTime();
-        calendar.add(Calendar.HOUR, 100);
-        dates[2] = calendar.getTime();
-        yValues[0] = 100;
-        yValues[1] = 500;
-        yValues[2] = 300;
-
-
-        Line<Integer> line = new Line<>(yValues, "#FF0000");
-
-        DateToIntChartData chartData = new DateToIntChartData(dates, new Line[]{line});
-
-        telegramChart.setData(chartData);
+        if(chartIndex < charts.size()) {
+            ChartData chartData = new ChartToChartDataConverter().convert(charts.get(chartIndex));
+            chartIndex++;
+            telegramChart.setData(chartData);
+        }
 
     }
 
