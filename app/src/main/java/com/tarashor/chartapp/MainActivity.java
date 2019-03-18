@@ -39,35 +39,31 @@ public class MainActivity extends AppCompatActivity {
     private void setData(int count, int range) {
         // now in hours
 
-//        Date[] dates = new Date[count];
-//        Integer[] yValues = new Integer[count];
-//
-//        for (int i = 0; i < count; i++) {
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.add(Calendar.HOUR, i);
-//            dates[i] = calendar.getTime();
-//
-//            yValues[i] = getRandom(range, 50);
-//        }
-//
-//        Line<Integer> line = new Line<>(yValues, "#FF0000");
-//
-//        DateToIntChartData chartData = new DateToIntChartData(dates, new Line[]{line});
-//
-//        telegramChart.setData(chartData);
+        Date[] dates = new Date[count];
+        Integer[] yValues = new Integer[count];
 
-        Date[] dates = new Date[3];
-        Integer[] yValues = new Integer[3];
+        for (int i = 0; i < count; i++) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, i);
+            dates[i] = calendar.getTime();
 
-        Calendar calendar = Calendar.getInstance();
-        dates[0] = calendar.getTime();
-        calendar.add(Calendar.HOUR, 100);
-        dates[1] = calendar.getTime();
-        calendar.add(Calendar.HOUR, 100);
-        dates[2] = calendar.getTime();
-        yValues[0] = 100;
-        yValues[1] = 500;
-        yValues[2] = 300;
+            yValues[i] = getRandom(range, 50);
+        }
+
+
+
+//        Date[] dates = new Date[3];
+//        Integer[] yValues = new Integer[3];
+//
+//        Calendar calendar = Calendar.getInstance();
+//        dates[0] = calendar.getTime();
+//        calendar.add(Calendar.HOUR, 100);
+//        dates[1] = calendar.getTime();
+//        calendar.add(Calendar.HOUR, 100);
+//        dates[2] = calendar.getTime();
+//        yValues[0] = 100;
+//        yValues[1] = 500;
+//        yValues[2] = 300;
 
 
         Line<Integer> line = new Line<>(yValues, "#FF0000");

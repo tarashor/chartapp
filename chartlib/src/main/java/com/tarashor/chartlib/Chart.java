@@ -59,7 +59,7 @@ public abstract class Chart<T extends ChartData> extends View {
 
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setColor(Color.rgb(150, 162, 170));
-        mTextPaint.setTextAlign(Align.CENTER);
+        mTextPaint.setTextAlign(Align.LEFT);
         mTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), AXIS_TEXT_SIZE_DP));
 
         mGridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -80,8 +80,12 @@ public abstract class Chart<T extends ChartData> extends View {
 
         calcMinMax();
 
+        calculateTransformMatrix();
+
         notifyDataSetChanged();
     }
+
+    protected abstract void calculateTransformMatrix();
 
     public void clear() {
         mData = null;
@@ -137,13 +141,17 @@ public abstract class Chart<T extends ChartData> extends View {
             return;
         }
 
-        if (!mOffsetsCalculated) {
-            calculateOffsets();
-            mOffsetsCalculated = true;
-        }
+        drawYAxis(canvas);
+
+//        if (!mOffsetsCalculated) {
+//            calculateOffsets();
+//            mOffsetsCalculated = true;
+//        }
     }
 
-    protected float getChartAreaHeight() {
+    protected abstract void drawYAxis(Canvas canvas);
+
+    protected float getChartAreaBottom() {
         return getHeight() - mBottomOffsetPixels;
     }
 

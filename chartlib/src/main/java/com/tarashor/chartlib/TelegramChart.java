@@ -4,22 +4,27 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 
 public class TelegramChart extends Chart<DateToIntChartData> {
-    private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
     private float[] line;
-    private Matrix transformMatrix;
+    private Matrix transformToScreenMatrix;
+    private Matrix transformToRealMatrix;
     private Paint linePaint;
     private float xmin;
     private float xmax;
     private float ymin;
     private float ymax;
+
+    private float minTopRealOffset;
+    private float minTopScreenOffset;
+
+    private YAxis yAxis;
 
     public TelegramChart(Context context) {
         super(context);
@@ -38,15 +43,21 @@ public class TelegramChart extends Chart<DateToIntChartData> {
         super.init();
         linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         linePaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
+
+        minTopScreenOffset = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
     }
+
 
     @Override
     public void notifyDataSetChanged() {
         if (!isEmpty()) {
-            calculateTransformMatrix();
             line = convertPointsToLine(mData.getPoints(0));
             linePaint.setColor(mData.getColor(0));
         }
+
+        yAxis = new YAxis(ymin, ymax,
+                getChartAreaWidth(), getChartAreaBottom(), minTopScreenOffset,
+                mGridPaint, mTextPaint);
 
         invalidate();
     }
@@ -60,8 +71,36 @@ public class TelegramChart extends Chart<DateToIntChartData> {
     protected void calcMinMax() {
         xmin = mData.convertXtoFloat(mData.getXMin());
         xmax = mData.convertXtoFloat(mData.getXMax());
-        ymin = mData.convertYtoFloat(mData.getYMin(0));
-        ymax = mData.convertYtoFloat(mData.getYMax(0));
+        ymin = 0;//mData.convertYtoFloat(mData.getYMin(0));
+        ymax = getRealTop(mData.getYMax(0));
+
+    }
+
+    private float getRealTop(int yMax) {
+        int div = 10;
+        int preDiv = 1;
+
+        while (yMax % div <=  (yMax - yMax % div) * minTopScreenOffset / (getChartAreaBottom() - minTopScreenOffset)) {
+            preDiv = div;
+
+            if (div == 1) div = 10;
+            else div *= 10;
+        }
+
+        minTopRealOffset = (yMax - yMax % preDiv) * minTopScreenOffset / (getChartAreaBottom() - minTopScreenOffset);
+
+        return yMax - yMax % preDiv + minTopRealOffset;
+    }
+
+
+    private int getNumberOfdigits(int number){
+        int length = 0;
+        long temp = 1;
+        while (temp <= number) {
+            length++;
+            temp *= 10;
+        }
+        return length;
     }
 
     private float[] convertPointsToLine(PointF[] points) {
@@ -86,36 +125,43 @@ public class TelegramChart extends Chart<DateToIntChartData> {
         return line;
     }
 
-
-    private void calculateTransformMatrix() {
-        transformMatrix = new Matrix();
-        transformMatrix.setTranslate(-xmin, 0);
+    @Override
+    protected void calculateTransformMatrix() {
+        transformToScreenMatrix = new Matrix();
+        transformToScreenMatrix.setTranslate(-xmin, -ymin);
         float sx = getChartAreaWidth() / (xmax - xmin) ;
-        float sy = getChartAreaHeight() / (ymax);
-        transformMatrix.postScale(sx, -sy);
-        transformMatrix.postTranslate(0, getChartAreaHeight());
+        float sy = getChartAreaBottom() / (ymax - ymin);
+        transformToScreenMatrix.postScale(sx, -sy);
+        transformToScreenMatrix.postTranslate(0, getChartAreaBottom());
+
+//        transformToRealMatrix = new Matrix();
+//        transformToRealMatrix.invert(transformToScreenMatrix);
     }
 
     private PointF convertToLocalCoordinates(PointF point) {
         float[] screenPoint = new float[2];
-        transformMatrix.mapPoints(screenPoint, new float[]{point.x, point.y});
+        transformToScreenMatrix.mapPoints(screenPoint, new float[]{point.x, point.y});
         return new PointF(screenPoint[0], screenPoint[1]);
+    }
+
+    private PointF convertToRealCoordinates(PointF point) {
+        float[] realPoint = new float[2];
+        transformToRealMatrix.mapPoints(realPoint, new float[]{point.x, point.y});
+        return new PointF(realPoint[0], realPoint[1]);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float delta = (getChartAreaHeight() - Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP)) / (GRID_HORIZONTAL_LINE_COUNT - 1);
 
-
-        for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
-            float y = getChartAreaHeight() - delta * i;
-            canvas.drawLine(0, y, getChartAreaWidth(), y, mGridPaint);
-            //canvas.drawText();
-        }
 
         if (line != null) {
             canvas.drawLines(line, linePaint);
         }
+    }
+
+    @Override
+    protected void drawYAxis(Canvas canvas) {
+        yAxis.draw(canvas);
     }
 }
