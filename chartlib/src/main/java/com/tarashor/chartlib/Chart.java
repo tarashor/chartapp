@@ -18,8 +18,6 @@ public abstract class Chart<T extends ChartData> extends View {
     protected final static int AXIS_TEXT_AREA_HEIGHT_DP = AXIS_TEXT_SIZE_DP + 4;
     protected final static int MIN_HEIGHT_CHART_DP = 38;
 
-
-    protected boolean mLogEnabled = false;
     protected T mData = null;
 
     protected Paint mTextPaint;
@@ -29,11 +27,6 @@ public abstract class Chart<T extends ChartData> extends View {
 
     private float mBottomOffsetPixels = 0.f;
 
-
-    private float mExtraTopOffset = 0.f,
-            mExtraRightOffset = 0.f,
-            mExtraBottomOffset = 0.f,
-            mExtraLeftOffset = 0.f;
 
 
     public Chart(Context context) {
@@ -66,13 +59,10 @@ public abstract class Chart<T extends ChartData> extends View {
         mGridPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
         mGridPaint.setColor(Color.rgb(241, 241, 242));
 
-        if (mLogEnabled)
-            Log.i("", "Chart.init()");
     }
 
     public void setData(T data) {
         mData = data;
-        mOffsetsCalculated = false;
 
         if (data == null) {
             return;
@@ -89,7 +79,6 @@ public abstract class Chart<T extends ChartData> extends View {
 
     public void clear() {
         mData = null;
-        mOffsetsCalculated = false;
         invalidate();
     }
 
@@ -99,11 +88,7 @@ public abstract class Chart<T extends ChartData> extends View {
 
     public abstract void notifyDataSetChanged();
 
-    protected abstract void calculateOffsets();
-
     protected abstract void calcMinMax();
-
-    private boolean mOffsetsCalculated = false;
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -142,12 +127,11 @@ public abstract class Chart<T extends ChartData> extends View {
         }
 
         drawYAxis(canvas);
+        drawXAxis(canvas);
 
-//        if (!mOffsetsCalculated) {
-//            calculateOffsets();
-//            mOffsetsCalculated = true;
-//        }
     }
+
+    protected abstract void drawXAxis(Canvas canvas);
 
     protected abstract void drawYAxis(Canvas canvas);
 
@@ -161,59 +145,6 @@ public abstract class Chart<T extends ChartData> extends View {
 
     public Point getCenter() {
         return new Point(getWidth() / 2, getHeight() / 2);
-    }
-
-
-
-    public void setExtraOffsets(float left, float top, float right, float bottom) {
-        setExtraLeftOffset(left);
-        setExtraTopOffset(top);
-        setExtraRightOffset(right);
-        setExtraBottomOffset(bottom);
-    }
-
-
-    public void setExtraTopOffset(float offset) {
-        mExtraTopOffset = Utils.convertDpToPixel(getContext(), offset);
-    }
-
-
-    public float getExtraTopOffset() {
-        return mExtraTopOffset;
-    }
-
-
-    public void setExtraRightOffset(float offset) {
-        mExtraRightOffset = Utils.convertDpToPixel(getContext(), offset);
-    }
-
-    public float getExtraRightOffset() {
-        return mExtraRightOffset;
-    }
-
-
-    public void setExtraBottomOffset(float offset) {
-        mExtraBottomOffset = Utils.convertDpToPixel(getContext(), offset);
-    }
-
-    public float getExtraBottomOffset() {
-        return mExtraBottomOffset;
-    }
-
-    public void setExtraLeftOffset(float offset) {
-        mExtraLeftOffset = Utils.convertDpToPixel(getContext(), offset);
-    }
-
-    public float getExtraLeftOffset() {
-        return mExtraLeftOffset;
-    }
-
-    public void setLogEnabled(boolean enabled) {
-        mLogEnabled = enabled;
-    }
-
-    public boolean isLogEnabled() {
-        return mLogEnabled;
     }
 
     public void setNoDataText(String text) {

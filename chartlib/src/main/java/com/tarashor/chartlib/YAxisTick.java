@@ -2,17 +2,22 @@ package com.tarashor.chartlib;
 
 import java.util.List;
 
-class YAxisTick {
+class AxisMark {
     private String text;
-    private float pixelOffset;
+    private float pixelOffsetX;
+    private float pixelOffsetY;
 
-    public YAxisTick(String text, float pixelOffset) {
+    public AxisMark(String text, float pixelOffsetX, float pixelOffsetY) {
         this.text = text;
-        this.pixelOffset = pixelOffset;
+        this.pixelOffsetY = pixelOffsetY;
+        this.pixelOffsetX = pixelOffsetX;
     }
 
-    public float getPixelOffset() {
-        return pixelOffset;
+    public float getPixelOffsetX() {
+        return pixelOffsetX;
+    }
+    public float getPixelOffsetY() {
+        return pixelOffsetY;
     }
 
     public String getText() {

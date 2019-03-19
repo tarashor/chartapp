@@ -40,9 +40,10 @@ public final class Line<YType extends Comparable<YType>> {
         return max;
     }
 
-    public Iterable<YType> yValues() {
-        return Arrays.asList(yValues);
+    public YType getY(int index){
+        return yValues[index];
     }
+
 
     public String getColor() {
         return color;

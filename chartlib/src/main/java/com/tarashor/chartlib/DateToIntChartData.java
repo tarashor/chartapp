@@ -15,13 +15,4 @@ public final class DateToIntChartData extends ChartData<Date, Integer> {
         super(xValues, lines);
     }
 
-    @Override
-    public float convertXtoFloat(Date x) {
-        return TimeUnit.MILLISECONDS.toHours(x.getTime());
-    }
-
-    @Override
-    public float convertYtoFloat(Integer y) {
-        return y;
-    }
 }

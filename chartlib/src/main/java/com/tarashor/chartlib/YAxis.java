@@ -7,18 +7,17 @@ import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
-class YAxis {
+class YAxis<T> {
     private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
     private float width;
     private final Paint mGridPaint;
     private final Paint mTextPaint;
 
-    private List<YAxisTick> ticks;
+    private List<AxisMark> ticks;
     private int textHeight;
 
-    public YAxis(float ymin, float ymax,
-                 float width, float height, float topOffset,
-                 Paint gridPaint, Paint textPaint) {
+    public YAxis(float width, float height, float topOffset,
+                 Paint gridPaint, Paint textPaint, IValueConverter<T> valueFormatter) {
         this.width = width;
 
         mGridPaint = gridPaint;
@@ -33,15 +32,15 @@ class YAxis {
         ticks = new ArrayList<>();
         for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
             float y = height - delta * i;
-            int v = Math.round(ymax - y * (ymax - ymin) / (height));
-            YAxisTick tick = new YAxisTick(String.valueOf(v), y);
+            T v = valueFormatter.pixelsToValue(y);
+            AxisMark tick = new AxisMark(valueFormatter.format(v), 0, y);
             ticks.add(tick);
         }
     }
 
     public void draw(Canvas canvas){
-        for (YAxisTick tick : ticks) {
-            float y = tick.getPixelOffset();
+        for (AxisMark tick : ticks) {
+            float y = tick.getPixelOffsetY();
             canvas.drawLine(0, y, width, y, mGridPaint);
             canvas.drawText(tick.getText(), 0, y + textHeight + 10, mTextPaint);
         }
