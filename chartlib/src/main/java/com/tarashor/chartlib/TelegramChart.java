@@ -9,7 +9,6 @@ import android.util.AttributeSet;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 
 public class TelegramChart extends Chart<DateToIntChartData> {
     private float[] line;
@@ -21,8 +20,8 @@ public class TelegramChart extends Chart<DateToIntChartData> {
     private float ymin;
     private float ymax;
 
-    private float minTopRealOffset;
-    private float minTopScreenOffset;
+    private float topRealOffset;
+    private float topPixelsOffset;
 
     private YAxis yAxis;
 
@@ -44,7 +43,7 @@ public class TelegramChart extends Chart<DateToIntChartData> {
         linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         linePaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
 
-        minTopScreenOffset = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
+        topPixelsOffset = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
     }
 
 
@@ -56,7 +55,7 @@ public class TelegramChart extends Chart<DateToIntChartData> {
         }
 
         yAxis = new YAxis(ymin, ymax,
-                getChartAreaWidth(), getChartAreaBottom(), minTopScreenOffset,
+                getChartAreaWidth(), getChartAreaBottom(), topPixelsOffset,
                 mGridPaint, mTextPaint);
 
         invalidate();
@@ -80,28 +79,20 @@ public class TelegramChart extends Chart<DateToIntChartData> {
         int div = 10;
         int preDiv = 1;
 
-        while (yMax % div <=  (yMax - yMax % div) * minTopScreenOffset / (getChartAreaBottom() - minTopScreenOffset)) {
+        while (yMax % div <=  (yMax / div * div) * topPixelsOffset / (getChartAreaBottom() - topPixelsOffset)) {
             preDiv = div;
-
-            if (div == 1) div = 10;
-            else div *= 10;
+            div *= 10;
         }
 
-        minTopRealOffset = (yMax - yMax % preDiv) * minTopScreenOffset / (getChartAreaBottom() - minTopScreenOffset);
+        int maxHorizontalLine = yMax / preDiv * preDiv;
+        if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1)* 10;
 
-        return yMax - yMax % preDiv + minTopRealOffset;
+        topRealOffset = maxHorizontalLine * topPixelsOffset / (getChartAreaBottom() - topPixelsOffset);
+
+        return maxHorizontalLine + topRealOffset;
+
     }
 
-
-    private int getNumberOfdigits(int number){
-        int length = 0;
-        long temp = 1;
-        while (temp <= number) {
-            length++;
-            temp *= 10;
-        }
-        return length;
-    }
 
     private float[] convertPointsToLine(PointF[] points) {
         Arrays.sort(points, new Comparator<PointF>() {
