@@ -1,9 +1,15 @@
 package com.tarashor.chartapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.github.mikephil.charting.components.YAxis;
@@ -76,5 +82,38 @@ public class MainActivity extends AppCompatActivity {
 
     protected int getRandom(int range, int start) {
         return (int)(Math.random() * range) + start;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.night_mode){
+            toggleTheme();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleTheme() {
+        getDelegate().setLocalNightMode(isNightMode() ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);
+        getDelegate().applyDayNight();
+    }
+
+    private boolean isNightMode(){
+        int currentNightMode = getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+
+        switch (currentNightMode) {
+            case Configuration.UI_MODE_NIGHT_NO:
+                return false;
+            case Configuration.UI_MODE_NIGHT_YES:
+                return true;
+                default: return false;
+        }
     }
 }
