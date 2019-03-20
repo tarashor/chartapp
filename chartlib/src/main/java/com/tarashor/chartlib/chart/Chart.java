@@ -1,6 +1,7 @@
 package com.tarashor.chartlib.chart;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -52,6 +53,7 @@ public class Chart extends View {
     private IValueConverter<Date> xConverter;
     private Date xViewPortMin;
     private Date xViewPortMax;
+    private Bitmap bitmap;
 
 
     public Chart(Context context) {
@@ -156,10 +158,8 @@ public class Chart extends View {
         drawXAxis(canvas);
 
 
-        if (lines != null) {
-            for (int i = 0; i < lines.length; i++) {
-                canvas.drawLines(lines[i], mLinePaints[i]);
-            }
+        if (!isEmpty()) {
+            canvas.drawBitmap(bitmap, 0, 0, null);
         }
 
     }
@@ -202,6 +202,14 @@ public class Chart extends View {
             mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
             mLinePaints[i] .setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
             mLinePaints[i] .setColor(mData.getColor(i));
+        }
+
+        bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_4444);
+        Canvas canvas = new Canvas(bitmap);
+        if (lines != null) {
+            for (int i = 0; i < lines.length; i++) {
+                canvas.drawLines(lines[i], mLinePaints[i]);
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.tarashor.chartlib;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -63,6 +64,7 @@ public class ChartRangeSelector extends View {
 
     private float leftPixels;
     private float rightPixels;
+    private Bitmap bitmap;
 
 
     public ChartRangeSelector(Context context) {
@@ -275,13 +277,11 @@ public class ChartRangeSelector extends View {
                 canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
             }
             return;
+        } else {
+            canvas.drawBitmap(bitmap, 0, 0, null);
         }
 
-        if (lines != null) {
-            for (int i = 0; i < lines.length; i++) {
-                canvas.drawLines(lines[i], mLinePaints[i]);
-            }
-        }
+
 
 
         canvas.drawRect(leftNotFilledRect, mNotSelectedPaint);
@@ -320,6 +320,14 @@ public class ChartRangeSelector extends View {
                 mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
                 mLinePaints[i].setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
                 mLinePaints[i].setColor(mData.getColor(i));
+            }
+
+            bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_4444);
+            Canvas canvas = new Canvas(bitmap);
+            if (lines != null) {
+                for (int i = 0; i < lines.length; i++) {
+                    canvas.drawLines(lines[i], mLinePaints[i]);
+                }
             }
 
             start = xmin;
@@ -367,7 +375,7 @@ public class ChartRangeSelector extends View {
             pointsInPixes[2 * i + 1] = yConverter.valueToPixels(points[i].getY());;
         }
 
-        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 1);
+        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 2);
 
         float[] line = new float[(pointsInPixes.length - 2) * 2];
 
