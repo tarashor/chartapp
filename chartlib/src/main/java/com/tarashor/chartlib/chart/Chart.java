@@ -3,23 +3,18 @@ package com.tarashor.chartlib.chart;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.tarashor.chartlib.IValueConverter;
+import com.tarashor.chartlib.data.DataPoint;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Locale;
 
 
 public class Chart extends View {
@@ -46,60 +41,15 @@ public class Chart extends View {
     private float mTopOffsetPixels = 0.f;
 
     private float[][] lines;
-    private Matrix transformToScreenMatrix;
-    private Matrix transformToRealMatrix;
-
 
     private int topRealOffset;
 
     private YAxis<Integer> yAxis;
     private XAxis<Date> xAxis;
 
-    private IValueConverter<Integer> yConverter = new IValueConverter<Integer>() {
-        @Override
-        public String format(Integer v) {
-            return String.valueOf(v);
-        }
+    private IValueConverter<Integer> yConverter;
+    private IValueConverter<Date> xConverter;
 
-        @Override
-        public float valueToPixels(Integer v) {
-            return convertIntegerToFloat(v) * getChartAreaBottom() / (convertIntegerToFloat(ymax) - convertIntegerToFloat(ymin));
-        }
-
-        @Override
-        public Integer pixelsToValue(float pixels) {
-            return Math.round(convertIntegerToFloat(ymax) - pixels * (convertIntegerToFloat(ymax) - convertIntegerToFloat(ymin)) / (getChartAreaBottom()));
-        }
-    };
-
-    private IValueConverter<Date> xConverter = new IValueConverter<Date>() {
-        @Override
-        public String format(Date v) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM d", Locale.ENGLISH);
-            return sdf.format(v);
-
-        }
-
-        @Override
-        public float valueToPixels(Date v) {
-            return convertDateToFloat(v) * getChartAreaWidth() / (convertDateToFloat(xmax) - convertDateToFloat(xmin));
-        }
-
-        @Override
-        public Date pixelsToValue(float pixels) {
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis((long)(convertDateToFloat(xmin) + pixels * (convertDateToFloat(xmax) - convertDateToFloat(xmin)) / (getChartAreaWidth())));
-            return c.getTime();
-        }
-    };
-
-    private float convertIntegerToFloat(Integer v){
-        return v;
-    }
-
-    private float convertDateToFloat(Date v){
-        return v.getTime();
-    }
 
     public Chart(Context context) {
         super(context);
@@ -148,8 +98,6 @@ public class Chart extends View {
         mData = data;
 
         calcMinMax();
-
-        calculateTransformMatrix();
 
         notifyDataSetChanged();
     }
@@ -223,30 +171,32 @@ public class Chart extends View {
 
     public void notifyDataSetChanged() {
         if (!isEmpty()) {
-            lines = new float[mData.getLinesCount()][];
-            mLinePaints = new Paint[mData.getLinesCount()];
-            for (int i = 0; i < mData.getLinesCount(); i++){
-                PointF[] points = new PointF[mData.getXCount()];
-                for (int j = 0; j < mData.getXCount(); j++) {
-                    points[j] = new PointF(convertDateToFloat(mData.getX(j)), convertIntegerToFloat(mData.getY(i, j)));
-                }
-                lines[i] = convertPointsToLine(points);
-                mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
-                mLinePaints[i] .setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
-                mLinePaints[i] .setColor(mData.getColor(i));
-            }
+            xConverter = new DateValueConverter(xmin, xmax, getChartAreaWidth());
+            yConverter = new IntegerValueConverter(ymin, ymax, getChartAreaBottom());
 
             yAxis = new YAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
                     mGridPaint, mYTextPaint, yConverter);
 
             xAxis = new XAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
                     mXTextPaint, xConverter, new Date());
+
+            lines = new float[mData.getLinesCount()][];
+            mLinePaints = new Paint[mData.getLinesCount()];
+            for (int i = 0; i < mData.getLinesCount(); i++){
+                lines[i] = convertPointsToLine(mData, i);
+
+                mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+                mLinePaints[i] .setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
+                mLinePaints[i] .setColor(mData.getColor(i));
+            }
         }
 
 
 
         invalidate();
     }
+
+
 
     protected void calcMinMax() {
         xmin = mData.getXMin();
@@ -281,44 +231,28 @@ public class Chart extends View {
 
     }
 
+    private float[] convertPointsToLine(DateToIntChartData mData, int lineIndex) {
+        DataPoint<Date, Integer>[] points = new DataPoint[mData.getXCount()];
+        for (int j = 0; j < mData.getXCount(); j++) {
+            points[j] = new DataPoint<>(mData.getX(j), mData.getY(lineIndex, j));
+        }
+        return convertPointsToLine(points);
+    }
 
-    private float[] convertPointsToLine(PointF[] points) {
-        Arrays.sort(points, new Comparator<PointF>() {
-            @Override
-            public int compare(PointF o1, PointF o2) {
-                return Float.compare(o1.x, o2.x);
-            }
-        });
+
+    private float[] convertPointsToLine(DataPoint<Date, Integer>[] points) {
+        Arrays.sort(points);
 
         float[] line = new float[(points.length - 1) * 2 * 2];
 
         for (int i = 0; i < points.length - 1; i++){
-            PointF start = convertToLocalCoordinates(points[i]);
-            PointF end = convertToLocalCoordinates(points[i + 1]);
-            line[4 * i] = start.x;
-            line[4 * i + 1] = start.y;
-            line[4 * i + 2] = end.x;
-            line[4 * i + 3] = end.y;
+            line[4 * i] = xConverter.valueToPixels(points[i].getX());
+            line[4 * i + 1] = yConverter.valueToPixels(points[i].getY());
+            line[4 * i + 2] = xConverter.valueToPixels(points[i+1].getX());
+            line[4 * i + 3] = yConverter.valueToPixels(points[i+1].getY());;
         }
 
         return line;
-    }
-
-
-    protected void calculateTransformMatrix() {
-        transformToScreenMatrix = new Matrix();
-        transformToScreenMatrix.setTranslate(-convertDateToFloat(xmin), -convertIntegerToFloat(ymin));
-        float sx = getChartAreaWidth() / (convertDateToFloat(xmax) - convertDateToFloat(xmin));
-        float sy = getChartAreaBottom() / (convertIntegerToFloat(ymax) - convertIntegerToFloat(ymin));
-        transformToScreenMatrix.postScale(sx, -sy);
-        transformToScreenMatrix.postTranslate(0, getChartAreaBottom());
-
-    }
-
-    private PointF convertToLocalCoordinates(PointF point) {
-        float[] screenPoint = new float[2];
-        transformToScreenMatrix.mapPoints(screenPoint, new float[]{point.x, point.y});
-        return new PointF(screenPoint[0], screenPoint[1]);
     }
 
 
