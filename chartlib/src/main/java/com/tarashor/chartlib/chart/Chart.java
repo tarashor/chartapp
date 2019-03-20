@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.tarashor.chartlib.IValueConverter;
+import com.tarashor.chartlib.Utils;
 import com.tarashor.chartlib.data.DataPoint;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
@@ -190,8 +191,6 @@ public class Chart extends View {
                 mLinePaints[i] .setColor(mData.getColor(i));
             }
         }
-
-
 
         invalidate();
     }

@@ -7,6 +7,7 @@ import android.view.View;
 
 import com.tarashor.chartapp.models.TelegramFileData;
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
+import com.tarashor.chartlib.TelegramChart;
 import com.tarashor.chartlib.chart.Chart;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Chart telegramChart;
+    private TelegramChart telegramChart;
     private int chartIndex = 0;
     private List<TelegramFileData> telegramFileData;
 

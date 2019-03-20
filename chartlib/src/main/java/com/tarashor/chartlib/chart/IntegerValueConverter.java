@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-class IntegerValueConverter implements IValueConverter<Integer> {
+public class IntegerValueConverter implements IValueConverter<Integer> {
     private final Integer mMin;
     private final Integer mMax;
     private final float scaleValue;
