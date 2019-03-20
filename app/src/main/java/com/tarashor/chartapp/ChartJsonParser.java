@@ -2,7 +2,7 @@ package com.tarashor.chartapp;
 
 import android.content.Context;
 
-import com.tarashor.chartapp.models.Chart;
+import com.tarashor.chartapp.models.TelegramFileData;
 import com.tarashor.chartapp.models.Column;
 
 import org.json.JSONArray;
@@ -13,33 +13,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class ChartJsonParser {
-    private final static String JSON_FILE_NAME = "charts_data";
+    private final static String JSON_FILE_NAME = "charts_data.json";
 
     private final static String COLUMNS_JSON_KEY = "columns";
     private final static String TYPES_JSON_KEY = "types";
     private final static String NAMES_JSON_KEY = "names";
     private final static String COLORS_JSON_KEY = "colors";
 
-    public List<Chart> parseColumns(Context context){
-        ArrayList<Chart> chartDataList = new ArrayList<>();
+    private final static String X_TYPE = "x";
+    private final static String Y_TYPE = "line";
+
+    public List<TelegramFileData> parseColumns(Context context){
+        ArrayList<TelegramFileData> telegramFileDataDataList = new ArrayList<>();
         JSONArray jsonArray = loadJSONFromAsset(context);
 
         if(jsonArray != null) {
             for (int i = 0; i < jsonArray.length(); i++) {
                 try {
-                    Chart chart = new Chart();
-                    chart.setColumns(parseChartDataFromJsonObject(jsonArray.getJSONObject(i)));
-                    chartDataList.add(chart);
+
+                    telegramFileDataDataList.add(parseChartDataFromJsonObject(jsonArray.getJSONObject(i)));
                 } catch (JSONException e) {
-                    return chartDataList;
+                    return telegramFileDataDataList;
                 }
             }
         }
 
-        return chartDataList;
+        return telegramFileDataDataList;
     }
 
     private JSONArray loadJSONFromAsset(Context context) {
@@ -61,41 +64,46 @@ public class ChartJsonParser {
         return jsonArray;
     }
 
-    private List<Column> parseChartDataFromJsonObject(JSONObject jsonObject) throws JSONException{
+
+    private TelegramFileData parseChartDataFromJsonObject(JSONObject jsonObject) throws JSONException{
+        TelegramFileData telegramFileData = new TelegramFileData();
+
+        Column<Long> xcolumn = new Column<>();
+        List<Column<Integer>> ycolumns = new ArrayList<>();
+
         JSONArray columnsData = jsonObject.getJSONArray(COLUMNS_JSON_KEY);
         ArrayList<Column> columns = new ArrayList<>();
 
         for(int i = 0; i < columnsData.length(); i++){
             JSONArray columnsDigitData = columnsData.getJSONArray(i);
-            Column column = new Column();
-            column.setName(columnsDigitData.getString(0));
-            ArrayList<Integer> columnValues = new ArrayList<>();
-            for(int j = 1; j < columnsDigitData.length(); j++){
-                columnValues.add(columnsDigitData.getInt(j));
-            }
-            column.setColumnsData(columnValues);
-            column.setType(jsonObject.getJSONObject(TYPES_JSON_KEY).optString(column.getName(), ""));
-            column.setVisibleName(jsonObject.getJSONObject(NAMES_JSON_KEY).optString(column.getName(), ""));
-            column.setColor(jsonObject.getJSONObject(COLORS_JSON_KEY).optString(column.getName(), ""));
-            columns.add(column);
-        }
+            String id = columnsDigitData.getString(0);
+            String type = jsonObject.getJSONObject(TYPES_JSON_KEY).optString(id, "");
+            if (type.equals(X_TYPE)) {
+                xcolumn.setName(id);
+                xcolumn.setType(type);
+                Long[] columnValues = new Long[columnsDigitData.length() - 1];
+                for (int j = 1; j < columnsDigitData.length(); j++) {
+                    columnValues[j - 1] = columnsDigitData.getLong(j);
+                }
+                xcolumn.setColumnsData(columnValues);
+            } else {
+                Column<Integer> column = new Column<>();
+                column.setName(id);
+                Integer[] columnValues = new Integer[columnsDigitData.length() - 1];
+                for (int j = 1; j < columnsDigitData.length(); j++) {
+                    columnValues[j - 1] = columnsDigitData.getInt(j);
+                }
+                column.setColumnsData(columnValues);
 
-        return columns;
-    }
-
-    private HashMap<String, ArrayList<Column>> parseColumns(JSONArray jsonArray) throws JSONException {
-        HashMap<String, ArrayList<Column>> columns = new HashMap<>();
-
-        for(int i = 0; i < jsonArray.length(); i++){
-            String columnName = jsonArray.getString(0);
-
-            JSONArray columnData = jsonArray.getJSONArray(i);
-            ArrayList<Integer> digitData = new ArrayList<>();
-            for(int j = 1; j < columnData.length(); j++){
-                digitData.add(columnData.getInt(j));
+                column.setVisibleName(jsonObject.getJSONObject(NAMES_JSON_KEY).optString(column.getName(), ""));
+                column.setColor(jsonObject.getJSONObject(COLORS_JSON_KEY).optString(column.getName(), ""));
+                ycolumns.add(column);
             }
         }
 
-        return columns;
+        telegramFileData.setXColumn(xcolumn);
+        telegramFileData.setYColumns(ycolumns);
+
+        return telegramFileData;
     }
 }

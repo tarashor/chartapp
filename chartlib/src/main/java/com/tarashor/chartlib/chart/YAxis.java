@@ -1,8 +1,10 @@
-package com.tarashor.chartlib;
+package com.tarashor.chartlib.chart;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+
+import com.tarashor.chartlib.IValueConverter;
 
 import java.util.ArrayList;
 import java.util.List;

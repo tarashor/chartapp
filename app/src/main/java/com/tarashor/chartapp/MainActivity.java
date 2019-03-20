@@ -2,36 +2,26 @@ package com.tarashor.chartapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
-import com.tarashor.chartapp.models.Chart;
+import com.tarashor.chartapp.models.TelegramFileData;
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
-import com.tarashor.chartlib.ChartData;
-import com.tarashor.chartlib.DateToIntChartData;
-import com.tarashor.chartlib.Line;
-import com.tarashor.chartlib.TelegramChart;
+import com.tarashor.chartlib.chart.Chart;
+import com.tarashor.chartlib.data.DateToIntChartData;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TelegramChart telegramChart;
+    private Chart telegramChart;
     private int chartIndex = 0;
-    private List<Chart> charts;
+    private List<TelegramFileData> telegramFileData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_main);
         telegramChart = findViewById(R.id.chart);
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         ChartJsonParser parser = new ChartJsonParser();
-        charts = parser.parseColumns(this);
+        telegramFileData = parser.parseColumns(this);
     }
 
 
@@ -67,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
 //        telegramChart.setData(chartData);
 
 
-        if(chartIndex < charts.size()) {
-            DateToIntChartData chartData = new ChartToChartDataConverter().convert(charts.get(chartIndex));
+        if(chartIndex < telegramFileData.size()) {
+            DateToIntChartData chartData = new ChartToChartDataConverter().convert(telegramFileData.get(chartIndex));
             chartIndex++;
             telegramChart.setData(chartData);
         }

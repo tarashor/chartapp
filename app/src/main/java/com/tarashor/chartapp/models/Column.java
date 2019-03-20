@@ -2,9 +2,9 @@ package com.tarashor.chartapp.models;
 
 import java.util.ArrayList;
 
-public class Column {
+public class Column<T> {
     private String name;
-    private ArrayList<Integer> columnsData;
+    private T[] columnsData;
     private String type;
     private String visibleName;
     private String color;
@@ -17,11 +17,11 @@ public class Column {
         this.name = name;
     }
 
-    public ArrayList<Integer> getColumnsData() {
+    public T[] getColumnsData() {
         return columnsData;
     }
 
-    public void setColumnsData(ArrayList<Integer> columnsData) {
+    public void setColumnsData(T[] columnsData) {
         this.columnsData = columnsData;
     }
 

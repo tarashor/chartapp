@@ -1,4 +1,4 @@
-package com.tarashor.chartlib;
+package com.tarashor.chartlib.chart;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,17 +11,18 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.tarashor.chartlib.IValueConverter;
+import com.tarashor.chartlib.data.DateToIntChartData;
+
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 
-public class TelegramChart extends View {
+public class Chart extends View {
     protected final static int AXIS_TEXT_SIZE_DP = 16;
     protected final static int AXIS_TEXT_AREA_HEIGHT_DP = AXIS_TEXT_SIZE_DP + 4;
     protected final static int MIN_HEIGHT_CHART_DP = 38;
@@ -32,7 +33,10 @@ public class TelegramChart extends View {
     private int ymin;
     private int ymax;
 
-    protected Paint mTextPaint;
+    protected Paint mYTextPaint;
+    protected Paint mXTextPaint;
+    protected Paint mNoDataTextPaint;
+
     protected Paint mGridPaint;
     private Paint[] mLinePaints;
 
@@ -84,7 +88,7 @@ public class TelegramChart extends View {
         @Override
         public Date pixelsToValue(float pixels) {
             Calendar c = Calendar.getInstance();
-            c.setTimeInMillis((long)(convertDateToFloat(xmax) - pixels * (convertDateToFloat(xmax) - convertDateToFloat(xmin)) / (getChartAreaWidth())));
+            c.setTimeInMillis((long)(convertDateToFloat(xmin) + pixels * (convertDateToFloat(xmax) - convertDateToFloat(xmin)) / (getChartAreaWidth())));
             return c.getTime();
         }
     };
@@ -97,17 +101,17 @@ public class TelegramChart extends View {
         return v.getTime();
     }
 
-    public TelegramChart(Context context) {
+    public Chart(Context context) {
         super(context);
         init();
     }
 
-    public TelegramChart(Context context, AttributeSet attrs) {
+    public Chart(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public TelegramChart(Context context, AttributeSet attrs, int defStyle) {
+    public Chart(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
@@ -120,16 +124,24 @@ public class TelegramChart extends View {
         mBottomOffsetPixels = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
         mTopOffsetPixels = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
 
-        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mTextPaint.setColor(Color.rgb(150, 162, 170));
-        mTextPaint.setTextAlign(Paint.Align.LEFT);
-        mTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), AXIS_TEXT_SIZE_DP));
+        mYTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mYTextPaint.setColor(Color.rgb(150, 162, 170));
+        mYTextPaint.setTextAlign(Paint.Align.LEFT);
+        mYTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), AXIS_TEXT_SIZE_DP));
+
+        mXTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mXTextPaint.setColor(Color.rgb(150, 162, 170));
+        mXTextPaint.setTextAlign(Paint.Align.LEFT);
+        mXTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), AXIS_TEXT_SIZE_DP));
+
+        mNoDataTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mNoDataTextPaint.setColor(Color.rgb(150, 162, 170));
+        mNoDataTextPaint.setTextAlign(Paint.Align.CENTER);
+        mNoDataTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), AXIS_TEXT_SIZE_DP));
 
         mGridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mGridPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
         mGridPaint.setColor(Color.rgb(241, 241, 242));
-
-
     }
 
     public void setData(DateToIntChartData data) {
@@ -179,8 +191,7 @@ public class TelegramChart extends View {
             boolean hasText = !TextUtils.isEmpty(mNoDataText);
             if (hasText) {
                 Point c = getCenter();
-                //mTextPaint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText(mNoDataText, c.x, c.y, mTextPaint);
+                canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
             }
             return;
         }
@@ -225,10 +236,11 @@ public class TelegramChart extends View {
                 mLinePaints[i] .setColor(mData.getColor(i));
             }
 
-            yAxis = new YAxis<Integer>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
-                    mGridPaint, mTextPaint, yConverter);
+            yAxis = new YAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
+                    mGridPaint, mYTextPaint, yConverter);
 
-            xAxis = new XAxis<Date>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels, mTextPaint, xConverter, new Date());
+            xAxis = new XAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
+                    mXTextPaint, xConverter, new Date());
         }
 
 
@@ -240,13 +252,14 @@ public class TelegramChart extends View {
         xmin = mData.getXMin();
         xmax = mData.getXMax();
         ymin = 0;//mData.convertYtoFloat(mData.getYMin(0));
-        ymax = 0;
-        for (int i = 0; i < mData.getLinesCount(); i++) {
-            int currentMax = getRealTop(mData.getYMax(i));
+        ymax = mData.getYMax(0);
+        for (int i = 1; i < mData.getLinesCount(); i++) {
+            int currentMax = mData.getYMax(i);
             if (ymax < currentMax){
                 ymax = currentMax;
             }
         }
+        ymax = getRealTop(ymax);
 
     }
 

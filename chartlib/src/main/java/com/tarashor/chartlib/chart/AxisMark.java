@@ -1,26 +1,23 @@
-package com.tarashor.chartlib;
-
-import java.util.List;
+package com.tarashor.chartlib.chart;
 
 class AxisMark {
     private String text;
     private float pixelOffsetX;
     private float pixelOffsetY;
 
-    public AxisMark(String text, float pixelOffsetX, float pixelOffsetY) {
+    AxisMark(String text, float pixelOffsetX, float pixelOffsetY) {
         this.text = text;
         this.pixelOffsetY = pixelOffsetY;
         this.pixelOffsetX = pixelOffsetX;
     }
 
-    public float getPixelOffsetX() {
+    float getPixelOffsetX() {
         return pixelOffsetX;
     }
-    public float getPixelOffsetY() {
+    float getPixelOffsetY() {
         return pixelOffsetY;
     }
-
-    public String getText() {
+    String getText() {
         return text;
     }
 }
