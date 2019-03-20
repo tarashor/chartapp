@@ -50,6 +50,8 @@ public class Chart extends View {
 
     private IValueConverter<Integer> yConverter;
     private IValueConverter<Date> xConverter;
+    private Date xViewPortMin;
+    private Date xViewPortMax;
 
 
     public Chart(Context context) {
@@ -98,9 +100,14 @@ public class Chart extends View {
     public void setData(DateToIntChartData data) {
         mData = data;
 
-        calcMinMax();
+        if (mData != null) {
+            xmin = mData.getXMin();
+            xmax = mData.getXMax();
 
-        notifyDataSetChanged();
+
+            calcViewPortMinMax();
+            notifyDataSetChanged();
+        }
     }
 
     public void clear() {
@@ -172,34 +179,42 @@ public class Chart extends View {
 
     public void notifyDataSetChanged() {
         if (!isEmpty()) {
-            xConverter = new DateValueConverter(xmin, xmax, getChartAreaWidth());
-            yConverter = new IntegerValueConverter(ymin, ymax, getChartAreaBottom());
-
-            yAxis = new YAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
-                    mGridPaint, mYTextPaint, yConverter);
-
-            xAxis = new XAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
-                    mXTextPaint, xConverter, new Date());
-
-            lines = new float[mData.getLinesCount()][];
-            mLinePaints = new Paint[mData.getLinesCount()];
-            for (int i = 0; i < mData.getLinesCount(); i++){
-                lines[i] = convertPointsToLine(mData, i);
-
-                mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
-                mLinePaints[i] .setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
-                mLinePaints[i] .setColor(mData.getColor(i));
-            }
+            initXAxis();
+            initYAxis();
+            convertLines();
         }
 
         invalidate();
     }
 
+    private void initYAxis() {
+        yConverter = new IntegerValueConverter(ymin, ymax, getChartAreaBottom());
+        yAxis = new YAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
+                mGridPaint, mYTextPaint, yConverter);
+    }
+
+    private void convertLines() {
+        lines = new float[mData.getLinesCount()][];
+        mLinePaints = new Paint[mData.getLinesCount()];
+        for (int i = 0; i < mData.getLinesCount(); i++){
+            lines[i] = convertPointsToLine(mData, i);
+
+            mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+            mLinePaints[i] .setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
+            mLinePaints[i] .setColor(mData.getColor(i));
+        }
+    }
+
+    private void initXAxis() {
+        xConverter = new DateValueConverter(xViewPortMin, xViewPortMax, getChartAreaWidth());
+        xAxis = new XAxis<>(getChartAreaWidth(), getChartAreaBottom(), mTopOffsetPixels,
+                mXTextPaint, xConverter, new Date());
+    }
 
 
-    protected void calcMinMax() {
-        xmin = mData.getXMin();
-        xmax = mData.getXMax();
+    protected void calcViewPortMinMax() {
+        xViewPortMin = xmin;
+        xViewPortMax = xmax;
         ymin = 0;//mData.convertYtoFloat(mData.getYMin(0));
         ymax = mData.getYMax(0);
         for (int i = 1; i < mData.getLinesCount(); i++) {
@@ -263,5 +278,16 @@ public class Chart extends View {
     protected void drawYAxis(Canvas canvas) {
         if (yAxis != null)
             yAxis.draw(canvas);
+    }
+
+    public void setXRange(Date start, Date end) {
+        xViewPortMin = start;
+        xViewPortMax = end;
+        if (!isEmpty()) {
+            initXAxis();
+            convertLines();
+        }
+
+        invalidate();
     }
 }

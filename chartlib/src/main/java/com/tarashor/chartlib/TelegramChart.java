@@ -8,6 +8,8 @@ import android.widget.LinearLayout;
 import com.tarashor.chartlib.chart.Chart;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
+import java.util.Date;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
@@ -42,6 +44,12 @@ public class TelegramChart extends LinearLayout {
         inflate(context, R.layout.telegram_chart_layout,this);
         chart = findViewById(R.id.telegram_chart_view);
         rangeSelector = findViewById(R.id.telegram_range_view);
+        rangeSelector.setListener(new ChartRangeSelector.OnRangeChangedListener() {
+            @Override
+            public void onRangeChanged(ChartRangeSelector v, Date start, Date end) {
+                chart.setXRange(start, end);
+            }
+        });
     }
 
     public void setData(DateToIntChartData data){

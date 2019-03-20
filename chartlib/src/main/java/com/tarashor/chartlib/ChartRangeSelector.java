@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -107,6 +108,7 @@ public class ChartRangeSelector extends View {
     private DragMode dragMode = DragMode.NONE;
     private float mPreviousX;
 
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
@@ -158,7 +160,7 @@ public class ChartRangeSelector extends View {
                 setRightPixels(rightPixels + dx);
                 break;
             case WHOLE:
-                setLeftAndRightRight(leftPixels + dx, rightPixels + dx);
+                setLeftAndRight(leftPixels + dx, rightPixels + dx);
                 break;
         }
 
@@ -166,27 +168,17 @@ public class ChartRangeSelector extends View {
             updateRects();
             invalidate();
         }
-
     }
 
-    private void setLeftPixels(float newLeftPixels) {
-        if (0 <= newLeftPixels && newLeftPixels <= rightPixels - mMinPortWidthPixels){
-            leftPixels = newLeftPixels;
-        }
+
+
+
+    private boolean isLeftPixelsValid(float newLeftPixels) {
+        return (0 <= newLeftPixels && newLeftPixels <= rightPixels - mPortLeftRightThicknessPixels - mMinPortWidthPixels);
     }
 
-    private void setRightPixels(float newRightPixels) {
-        if (leftPixels + mMinPortWidthPixels <= newRightPixels && newRightPixels <= getChartAreaWidth()){
-            rightPixels = newRightPixels;
-        }
-    }
-
-    private void setLeftAndRightRight(float newLeftPixels, float newRightPixels) {
-        if ((0 <= newLeftPixels && newLeftPixels <= rightPixels - mMinPortWidthPixels) &&
-                (leftPixels + mMinPortWidthPixels <= newRightPixels && newRightPixels <= getChartAreaWidth())) {
-            leftPixels = newLeftPixels;
-            rightPixels = newRightPixels;
-        }
+    private boolean isRightPixelsValid(float newRightPixels) {
+        return (leftPixels + mPortLeftRightThicknessPixels + mMinPortWidthPixels <= newRightPixels && newRightPixels <= getChartAreaWidth());
     }
 
     public void setData(DateToIntChartData data) {
@@ -330,8 +322,12 @@ public class ChartRangeSelector extends View {
                 mLinePaints[i].setColor(mData.getColor(i));
             }
 
-            setStartInternal(xmin);
-            setEndInternal(xmax);
+            start = xmin;
+            end = xmax;
+            leftPixels = xConverter.valueToPixels(start);
+            rightPixels = xConverter.valueToPixels(end);
+            updateRects();
+
         }
 
         invalidate();
@@ -364,13 +360,22 @@ public class ChartRangeSelector extends View {
     private float[] convertPointsToLine(DataPoint<Date, Integer>[] points) {
         Arrays.sort(points);
 
-        float[] line = new float[(points.length - 1) * 2 * 2];
+        float[] pointsInPixes = new float[points.length * 2];
 
-        for (int i = 0; i < points.length - 1; i++){
-            line[4 * i] = xConverter.valueToPixels(points[i].getX());
-            line[4 * i + 1] = yConverter.valueToPixels(points[i].getY());
-            line[4 * i + 2] = xConverter.valueToPixels(points[i+1].getX());
-            line[4 * i + 3] = yConverter.valueToPixels(points[i+1].getY());;
+        for (int i = 0; i < points.length; i++){
+            pointsInPixes[2 * i] = xConverter.valueToPixels(points[i].getX());
+            pointsInPixes[2 * i + 1] = yConverter.valueToPixels(points[i].getY());;
+        }
+
+        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 1);
+
+        float[] line = new float[(pointsInPixes.length - 2) * 2];
+
+        for (int i = 0; i < pointsInPixes.length - 2; i+=2){
+            line[2 * i] = pointsInPixes[i];
+            line[2 * i + 1] = pointsInPixes[i+1];
+            line[2 * i + 2] = pointsInPixes[i+2];
+            line[2 * i + 3] = pointsInPixes[i+3];
         }
 
         return line;
@@ -396,15 +401,76 @@ public class ChartRangeSelector extends View {
     }
 
     private void setStartInternal(Date start) {
-        this.start = start;
-        leftPixels = xConverter.valueToPixels(this.start);
-        updateRects();
-
+        float newLeftPixels = xConverter.valueToPixels(start);
+        setLeftPixels(newLeftPixels);
     }
 
     private void setEndInternal(Date end) {
-        this.end = end;
-        rightPixels = xConverter.valueToPixels(this.end);
-        updateRects();
+        float newRightPixels = xConverter.valueToPixels(end);
+        setRightPixels(newRightPixels);
     }
+
+
+    private void setLeftPixels(float newLeftPixels) {
+        if (isLeftPixelsValid(newLeftPixels)){
+            if (leftPixels != newLeftPixels) {
+                leftPixels = newLeftPixels;
+                this.start = xConverter.pixelsToValue(leftPixels);
+                updateRects();
+                onRangeChanged();
+            }
+        }
+    }
+
+    private void setRightPixels(float newRightPixels) {
+        if (isRightPixelsValid(newRightPixels)){
+            if (rightPixels != newRightPixels) {
+                rightPixels = newRightPixels;
+                this.end = xConverter.pixelsToValue(rightPixels);
+                updateRects();
+                onRangeChanged();
+            }
+        }
+    }
+
+    private void setLeftAndRight(float newLeftPixels, float newRightPixels) {
+        if (isLeftPixelsValid(newLeftPixels) && isRightPixelsValid(newRightPixels)) {
+            boolean isChanged = false;
+            if (leftPixels != newLeftPixels) {
+                leftPixels = newLeftPixels;
+                this.start = xConverter.pixelsToValue(leftPixels);
+                isChanged = true;
+            }
+            if (rightPixels != newRightPixels) {
+                rightPixels = newRightPixels;
+                this.end = xConverter.pixelsToValue(rightPixels);
+                isChanged = true;
+            }
+            if (isChanged){
+                updateRects();
+                onRangeChanged();
+            }
+        }
+    }
+
+    private void onRangeChanged(){
+        if (listener != null){
+            listener.onRangeChanged(this, start, end);
+//            Log.v("CHART START", start.toString());
+//            Log.v("CHART", end.toString());
+        }
+    }
+
+
+    private OnRangeChangedListener listener;
+
+    public void setListener(OnRangeChangedListener listener) {
+        this.listener = listener;
+    }
+
+    public interface OnRangeChangedListener {
+
+        void onRangeChanged(ChartRangeSelector v, Date start, Date end);
+    }
+
 }

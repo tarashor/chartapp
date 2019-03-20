@@ -33,8 +33,7 @@ public class DateValueConverter implements IValueConverter<Date> {
     @Override
     public Date pixelsToValue(float pixels) {
         Calendar c = Calendar.getInstance();
-        c.setTime(mMin);
-        c.add(Calendar.MILLISECOND, Math.round(pixels * scaleValue));
+        c.setTimeInMillis(mMin.getTime() +(long)(pixels * scaleValue));
         return c.getTime();
     }
 
