@@ -8,6 +8,7 @@ public class Column<T> {
     private String type;
     private String visibleName;
     private String color;
+    private boolean enabled = true;
 
     public String getName() {
         return name;
@@ -47,5 +48,13 @@ public class Column<T> {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

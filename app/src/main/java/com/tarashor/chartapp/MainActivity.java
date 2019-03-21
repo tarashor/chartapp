@@ -1,22 +1,36 @@
 package com.tarashor.chartapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatCheckBox;
 
+import android.annotation.SuppressLint;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
+import com.github.mikephil.charting.data.ChartData;
+import com.tarashor.chartapp.models.Column;
 import com.tarashor.chartapp.models.TelegramFileData;
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
 import com.tarashor.chartlib.chart.Chart;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private Chart telegramChart;
-    private int chartIndex = 0;
+    private int chartIndex = 4;
     private List<TelegramFileData> telegramFileData;
+    private ListView checkBoxList;
+    private CheckBoxAdapter checkBoxAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         });
         ChartJsonParser parser = new ChartJsonParser();
         telegramFileData = parser.parseColumns(this);
+        checkBoxList = findViewById(R.id.checkbox_list);
     }
 
 
@@ -58,14 +73,35 @@ public class MainActivity extends AppCompatActivity {
 
 
         if(chartIndex < telegramFileData.size()) {
+            addCheckBoxes(telegramFileData.get(chartIndex));
             DateToIntChartData chartData = new ChartToChartDataConverter().convert(telegramFileData.get(chartIndex));
-            chartIndex++;
             telegramChart.setData(chartData);
         }
 
     }
 
-    protected int getRandom(int range, int start) {
-        return (int)(Math.random() * range) + start;
+    private void addCheckBoxes(final TelegramFileData fileData) {
+        List<CheckBoxItem> items = new ArrayList<>();
+        for(Column<Integer> column : fileData.getYColumns()){
+            CheckBoxItem checkBoxItem = new CheckBoxItem();
+            checkBoxItem.setColor(column.getColor());
+            checkBoxItem.setName(column.getName());
+            checkBoxItem.setEnabled(column.isEnabled());
+            items.add(checkBoxItem);
+        }
+
+        if(checkBoxAdapter == null) {
+            checkBoxAdapter = new CheckBoxAdapter(this, items);
+            checkBoxList.setAdapter(checkBoxAdapter);
+            checkBoxAdapter.setOnCheckedChangeListener(new CheckBoxAdapter.CheckedChange() {
+                @Override
+                public void onChange(boolean checked, int pos) {
+                    fileData.getYColumns().get(pos).setEnabled(checked);
+                    setData(0, 0);
+                }
+            });
+        } else {
+            checkBoxAdapter.setCheckBoxItems(items);
+        }
     }
 }

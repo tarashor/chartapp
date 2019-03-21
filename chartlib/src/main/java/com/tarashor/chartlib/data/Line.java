@@ -7,8 +7,9 @@ public final class Line<YType extends Comparable<YType>> {
     private final String color;
     private final YType min;
     private final YType max;
+    private boolean enabled;
 
-    public Line(YType[] yValues, String color) {
+    public Line(YType[] yValues, String color, boolean enabled) {
         this.yValues = Arrays.copyOf(yValues, yValues.length);
         this.color = color;
 
@@ -26,10 +27,11 @@ public final class Line<YType extends Comparable<YType>> {
 
         this.min = min;
         this.max = max;
+        this.enabled = enabled;
     }
 
     public Line<YType> copy() {
-        return new Line<>(yValues, color);
+        return new Line<>(yValues, color, enabled);
     }
 
     public YType getMin() {
@@ -47,5 +49,13 @@ public final class Line<YType extends Comparable<YType>> {
 
     public String getColor() {
         return color;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
