@@ -4,23 +4,23 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-import com.tarashor.chartlib.IValueConverter;
+import com.tarashor.chartlib.ChartViewPort;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class YAxis<T> {
+class YAxis {
     private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
-    private float width;
     private final Paint mGridPaint;
     private final Paint mTextPaint;
 
     private List<AxisMark> ticks;
     private int textHeight;
+    private ChartViewPort mViewPort;
 
-    public YAxis(float width, float height, float topOffset,
-                 Paint gridPaint, Paint textPaint, IValueConverter<T> valueFormatter) {
-        this.width = width;
+    public YAxis(ChartViewPort viewPort,
+                 Paint gridPaint, Paint textPaint, IntegerValueFormatter valueFormatter) {
+        mViewPort = viewPort;
 
         mGridPaint = gridPaint;
         mTextPaint = textPaint;
@@ -29,12 +29,14 @@ class YAxis<T> {
         mTextPaint.getTextBounds("9", 0, 1, bounds);
         textHeight = bounds.top - bounds.bottom;
 
-        float delta = (height - topOffset) / (GRID_HORIZONTAL_LINE_COUNT - 1);
+        float bottomY = mViewPort.getHeight() - mViewPort.getBottomOffsetPixels();
+
+        float delta = (bottomY) / (GRID_HORIZONTAL_LINE_COUNT - 1);
 
         ticks = new ArrayList<>();
         for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
-            float y = height - delta * i;
-            T v = valueFormatter.pixelsToValue(y);
+            float y = bottomY - delta * i;
+            int v = mViewPort.yPixelsToValue(y);
             AxisMark tick = new AxisMark(valueFormatter.format(v), 0, y);
             ticks.add(tick);
         }
@@ -43,7 +45,7 @@ class YAxis<T> {
     public void draw(Canvas canvas){
         for (AxisMark tick : ticks) {
             float y = tick.getPixelOffsetY();
-            canvas.drawLine(0, y, width, y, mGridPaint);
+            canvas.drawLine(0, y, mViewPort.getWidth(), y, mGridPaint);
             canvas.drawText(tick.getText(), 0, y + textHeight + 10, mTextPaint);
         }
     }

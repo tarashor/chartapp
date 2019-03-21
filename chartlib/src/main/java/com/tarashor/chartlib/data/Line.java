@@ -3,12 +3,14 @@ package com.tarashor.chartlib.data;
 import java.util.Arrays;
 
 public final class Line<YType extends Comparable<YType>> {
+    private final String name;
     private final YType[] yValues;
     private final String color;
     private final YType min;
     private final YType max;
 
-    public Line(YType[] yValues, String color) {
+    public Line(String name, YType[] yValues, String color) {
+        this.name = name;
         this.yValues = Arrays.copyOf(yValues, yValues.length);
         this.color = color;
 
@@ -29,7 +31,7 @@ public final class Line<YType extends Comparable<YType>> {
     }
 
     public Line<YType> copy() {
-        return new Line<>(yValues, color);
+        return new Line<>(name, yValues, color);
     }
 
     public YType getMin() {
@@ -47,5 +49,9 @@ public final class Line<YType extends Comparable<YType>> {
 
     public String getColor() {
         return color;
+    }
+
+    public String getName() {
+        return name;
     }
 }

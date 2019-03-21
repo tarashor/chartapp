@@ -5,27 +5,16 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.RectF;
-import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
-import android.view.View;
 
-import com.tarashor.chartlib.chart.DateValueConverter;
-import com.tarashor.chartlib.chart.IntegerValueConverter;
-import com.tarashor.chartlib.data.DataPoint;
-import com.tarashor.chartlib.data.DateToIntChartData;
-
-import java.util.Arrays;
 import java.util.Date;
 
-public class ChartRangeSelector extends View {
-    protected final static int MIN_HEIGHT_CHART_DP = 38;
+import androidx.core.view.GestureDetectorCompat;
 
-    private Date start;
-    private Date end;
+public class ChartRangeSelector extends BaseChartView  {
 
     private final RectF leftNotFilledRect = new RectF();
     private final RectF rightNotFilledRect = new RectF();
@@ -35,60 +24,40 @@ public class ChartRangeSelector extends View {
     private final RectF topRect = new RectF();
     private final RectF bottomRect = new RectF();
 
-
-    protected DateToIntChartData mData = null;
-    private Date xmin;
-    private Date xmax;
-    private int ymin;
-    private int ymax;
-
     protected Paint mNotSelectedPaint;
     protected Paint mSelectedBorder;
-    protected Paint mNoDataTextPaint;
 
-    protected Paint mGridPaint;
-    private Paint[] mLinePaints;
+    private float mPortLeftRightThicknessPixels;
+    private float mPortTopBottomThicknessPixels;
+    private float mMinPortWidthPixels;
 
-    private float mBottomOffsetPixels = 0.f;
-    private float mTopOffsetPixels = 0.f;
-
-    private float mPortLeftRightThicknessPixels = 0.f;
-    private float mPortTopBottomThicknessPixels = 0.f;
-    private float mMinPortWidthPixels = 0.f;
-
-    private float[][] lines;
-
-    private IValueConverter<Integer> yConverter;
-    private IValueConverter<Date> xConverter;
-    private String mNoDataText = "No data!";
-
+    private Date start;
+    private Date end;
     private float leftPixels;
     private float rightPixels;
-    private Bitmap bitmap;
+
+    //private Bitmap bitmap;
+    private GestureDetectorCompat mDetector;
+    private DragMode mDragMode = DragMode.NONE;
+
+    private OnRangeChangedListener listener;
 
 
     public ChartRangeSelector(Context context) {
         super(context);
-        init();
     }
 
     public ChartRangeSelector(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public ChartRangeSelector(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
     }
 
 
     protected void init() {
-        setWillNotDraw(false);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
-
-        mBottomOffsetPixels = Utils.convertDpToPixel(getContext(), 2);
-        mTopOffsetPixels = Utils.convertDpToPixel(getContext(), 2);
+        super.init();
 
         mPortLeftRightThicknessPixels = Utils.convertDpToPixel(getContext(), 30);
         mPortTopBottomThicknessPixels = Utils.convertDpToPixel(getContext(), 4);
@@ -101,55 +70,44 @@ public class ChartRangeSelector extends View {
         mSelectedBorder = new Paint(Paint.ANTI_ALIAS_FLAG);
         mSelectedBorder.setColor(Color.argb(125, 180, 180, 180));
 
-        mNoDataTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mNoDataTextPaint.setColor(Color.rgb(180, 180, 180));
-        mNoDataTextPaint.setTextAlign(Paint.Align.CENTER);
-        mNoDataTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 16));
+
+        mDetector = new GestureDetectorCompat(getContext(),new SimpleOnGestureListener(){
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                moveBy(-distanceX, mDragMode);
+                return super.onScroll(e1, e2, distanceX, distanceY);
+            }
+
+            @Override
+            public boolean onDown(MotionEvent event) {
+                float x = event.getX();
+                float y = event.getY();
+                if (leftRect.left <= x && x <= leftRect.right) {
+                    mDragMode = DragMode.LEFT;
+                    return true;
+                } else if (rightRect.left <= x && x <= rightRect.right) {
+                    mDragMode = DragMode.RIGHT;
+                    return true;
+                } else if (leftRect.right <= x && x <= rightRect.left) {
+                    mDragMode = DragMode.WHOLE;
+                    return true;
+                } else {
+                    mDragMode = DragMode.NONE;
+                    return super.onDown(event);
+                }
+            }
+
+
+        });
     }
 
-    private DragMode dragMode = DragMode.NONE;
-    private float mPreviousX;
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (leftRect.left <= x && x <= leftRect.right) {
-                    dragMode = DragMode.LEFT;
-                    setPressed(true);
-                } else if (rightRect.left <= x && x <= rightRect.right) {
-                    dragMode = DragMode.RIGHT;
-                    setPressed(true);
-                } else if (leftRect.right <= x && x <= rightRect.left) {
-                    dragMode = DragMode.WHOLE;
-                    setPressed(true);
-                } else dragMode = DragMode.NONE;
-
-                mPreviousX = x;
-                break;
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_OUTSIDE:
-                float dx = x - mPreviousX;
-                if (dx != 0) {
-                    moveBy(dx, dragMode);
-                }
-                mPreviousX = x;
-                break;
-
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                mPreviousX = 0;
-                dragMode = DragMode.NONE;
-                setPressed(false);
-                invalidate();
-                break;
-        }
-        return true;
+        if (mDetector.onTouchEvent(event))
+            return true;
+        else return super.onTouchEvent(event);
 
     }
 
@@ -162,58 +120,25 @@ public class ChartRangeSelector extends View {
                 setRightPixels(rightPixels + dx);
                 break;
             case WHOLE:
-                setLeftAndRight(leftPixels + dx, rightPixels + dx);
+                float dist = rightPixels - leftPixels;
+                if (leftPixels + dx < 0) {
+                    setLeftAndRight(0, dist);
+                } else if (rightPixels + dx > viewPort.getWidth()){
+                    setLeftAndRight(viewPort.getWidth() - dist, viewPort.getWidth());
+                } else {
+                    setLeftAndRight(leftPixels + dx, rightPixels + dx);
+                }
                 break;
         }
 
         if (dragMode != DragMode.NONE){
-            updateRects();
             invalidate();
         }
     }
 
 
-
-
-    private boolean isLeftPixelsValid(float newLeftPixels) {
-        return (0 <= newLeftPixels && newLeftPixels <= rightPixels - mPortLeftRightThicknessPixels - mMinPortWidthPixels);
-    }
-
-    private boolean isRightPixelsValid(float newRightPixels) {
-        return (leftPixels + mPortLeftRightThicknessPixels + mMinPortWidthPixels <= newRightPixels && newRightPixels <= getChartAreaWidth());
-    }
-
-    public void setData(DateToIntChartData data) {
-        mData = data;
-
-        calcMinMax();
-
-        notifyDataSetChanged();
-    }
-
-    public void clear() {
-        mData = null;
-        invalidate();
-    }
-
-    public boolean isEmpty() {
-        return mData == null || mData.isEmpty();
-    }
-
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int size = (int) (Utils.convertDpToPixel(getContext(), MIN_HEIGHT_CHART_DP));
-        setMeasuredDimension(getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),
-                Math.max(getSuggestedMinimumHeight(), resolveSize(size, heightMeasureSpec)));
-    }
-
-
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        notifyDataSetChanged();
-
         super.onSizeChanged(w, h, oldw, oldh);
 
         leftNotFilledRect.right = leftPixels;
@@ -265,24 +190,17 @@ public class ChartRangeSelector extends View {
     }
 
 
-
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        if (isEmpty()) {
-            boolean hasText = !TextUtils.isEmpty(mNoDataText);
-            if (hasText) {
-                Point c = getCenter();
-                canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
-            }
-            return;
-        } else {
-            canvas.drawBitmap(bitmap, 0, 0, null);
-        }
-
-
-
+    protected void drawView(Canvas canvas) {
+//        if (lines != null) {
+//            for (int i = 0; i < lines.length; i++) {
+//                if (lines[i] != null) {
+//                    mLinesPaint.setColor(mLineColors[i]);
+//                    canvas.drawLines(lines[i], mLinesPaint);
+//                }
+//            }
+//        }
+        //canvas.drawBitmap(bitmap, 0, 0, null);
 
         canvas.drawRect(leftNotFilledRect, mNotSelectedPaint);
         canvas.drawRect(rightNotFilledRect, mNotSelectedPaint);
@@ -290,104 +208,21 @@ public class ChartRangeSelector extends View {
         canvas.drawRect(rightRect, mSelectedBorder);
         canvas.drawRect(topRect, mSelectedBorder);
         canvas.drawRect(bottomRect, mSelectedBorder);
-
-
-
     }
 
-    public Point getCenter() {
-        return new Point(getWidth() / 2, getHeight() / 2);
-    }
-
-    protected float getChartAreaBottom() {
-        return getHeight() - mBottomOffsetPixels;
-    }
-
-    protected float getChartAreaWidth() {
-        return getWidth();
-    }
-
-    public void notifyDataSetChanged() {
+    @Override
+    protected void onDataChanged() {
+        super.onDataChanged();
         if (!isEmpty()) {
-            xConverter = new DateValueConverter(xmin, xmax, getChartAreaWidth());
-            yConverter = new IntegerValueConverter(ymin, ymax, getChartAreaBottom());
-
-            lines = new float[mData.getLinesCount()][];
-            mLinePaints = new Paint[mData.getLinesCount()];
-            for (int i = 0; i < mData.getLinesCount(); i++){
-                lines[i] = convertPointsToLine(mData, i);
-
-                mLinePaints[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
-                mLinePaints[i].setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
-                mLinePaints[i].setColor(mData.getColor(i));
-            }
-
-            bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_4444);
-            Canvas canvas = new Canvas(bitmap);
-            if (lines != null) {
-                for (int i = 0; i < lines.length; i++) {
-                    canvas.drawLines(lines[i], mLinePaints[i]);
-                }
-            }
-
             start = xmin;
             end = xmax;
-            leftPixels = xConverter.valueToPixels(start);
-            rightPixels = xConverter.valueToPixels(end);
+            leftPixels = viewPort.xValueToPixels(start);
+            rightPixels = viewPort.xValueToPixels(end);
             updateRects();
 
         }
-
-        invalidate();
     }
 
-
-
-    protected void calcMinMax() {
-        xmin = mData.getXMin();
-        xmax = mData.getXMax();
-        ymin = 0;//mData.convertYtoFloat(mData.getYMin(0));
-        ymax = mData.getYMax(0);
-        for (int i = 1; i < mData.getLinesCount(); i++) {
-            int currentMax = mData.getYMax(i);
-            if (ymax < currentMax){
-                ymax = currentMax;
-            }
-        }
-    }
-
-    private float[] convertPointsToLine(DateToIntChartData mData, int lineIndex) {
-        DataPoint<Date, Integer>[] points = new DataPoint[mData.getXCount()];
-        for (int j = 0; j < mData.getXCount(); j++) {
-            points[j] = new DataPoint<>(mData.getX(j), mData.getY(lineIndex, j));
-        }
-        return convertPointsToLine(points);
-    }
-
-
-    private float[] convertPointsToLine(DataPoint<Date, Integer>[] points) {
-        Arrays.sort(points);
-
-        float[] pointsInPixes = new float[points.length * 2];
-
-        for (int i = 0; i < points.length; i++){
-            pointsInPixes[2 * i] = xConverter.valueToPixels(points[i].getX());
-            pointsInPixes[2 * i + 1] = yConverter.valueToPixels(points[i].getY());;
-        }
-
-        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 2);
-
-        float[] line = new float[(pointsInPixes.length - 2) * 2];
-
-        for (int i = 0; i < pointsInPixes.length - 2; i+=2){
-            line[2 * i] = pointsInPixes[i];
-            line[2 * i + 1] = pointsInPixes[i+1];
-            line[2 * i + 2] = pointsInPixes[i+2];
-            line[2 * i + 3] = pointsInPixes[i+3];
-        }
-
-        return line;
-    }
 
 
     public Date getStart() {
@@ -409,72 +244,76 @@ public class ChartRangeSelector extends View {
     }
 
     private void setStartInternal(Date start) {
-        float newLeftPixels = xConverter.valueToPixels(start);
+        float newLeftPixels = viewPort.xValueToPixels(start);
         setLeftPixels(newLeftPixels);
     }
 
     private void setEndInternal(Date end) {
-        float newRightPixels = xConverter.valueToPixels(end);
+        float newRightPixels = viewPort.xValueToPixels(end);
         setRightPixels(newRightPixels);
     }
 
 
+
     private void setLeftPixels(float newLeftPixels) {
-        if (isLeftPixelsValid(newLeftPixels)){
-            if (leftPixels != newLeftPixels) {
-                leftPixels = newLeftPixels;
-                this.start = xConverter.pixelsToValue(leftPixels);
-                updateRects();
-                onRangeChanged();
-            }
+        if (newLeftPixels < 0) newLeftPixels = 0;
+        else {
+            float rightEdge = rightPixels - mPortLeftRightThicknessPixels - mMinPortWidthPixels;
+            if (newLeftPixels > rightEdge) newLeftPixels = rightEdge;
+        }
+
+        if (leftPixels != newLeftPixels) {
+            leftPixels = newLeftPixels;
+            this.start = viewPort.xPixelsToValue(leftPixels);
+            updateRects();
+            onRangeChanged();
         }
     }
 
     private void setRightPixels(float newRightPixels) {
-        if (isRightPixelsValid(newRightPixels)){
-            if (rightPixels != newRightPixels) {
-                rightPixels = newRightPixels;
-                this.end = xConverter.pixelsToValue(rightPixels);
-                updateRects();
-                onRangeChanged();
-            }
+        if (newRightPixels > viewPort.getWidth()) newRightPixels = viewPort.getWidth();
+        else {
+            float leftEdge = leftPixels + mPortLeftRightThicknessPixels + mMinPortWidthPixels;
+            if (newRightPixels < leftEdge) newRightPixels = leftEdge;
         }
+        if (rightPixels != newRightPixels) {
+            rightPixels = newRightPixels;
+            this.end = viewPort.xPixelsToValue(rightPixels);
+            updateRects();
+            onRangeChanged();
+        }
+
     }
 
     private void setLeftAndRight(float newLeftPixels, float newRightPixels) {
-        if (isLeftPixelsValid(newLeftPixels) && isRightPixelsValid(newRightPixels)) {
-            boolean isChanged = false;
-            if (leftPixels != newLeftPixels) {
-                leftPixels = newLeftPixels;
-                this.start = xConverter.pixelsToValue(leftPixels);
-                isChanged = true;
-            }
-            if (rightPixels != newRightPixels) {
-                rightPixels = newRightPixels;
-                this.end = xConverter.pixelsToValue(rightPixels);
-                isChanged = true;
-            }
-            if (isChanged){
-                updateRects();
-                onRangeChanged();
-            }
+        boolean isChanged = false;
+        if (leftPixels != newLeftPixels) {
+            leftPixels = newLeftPixels;
+            this.start = viewPort.xPixelsToValue(leftPixels);
+            isChanged = true;
         }
+        if (rightPixels != newRightPixels) {
+            rightPixels = newRightPixels;
+            this.end = viewPort.xPixelsToValue(rightPixels);
+            isChanged = true;
+        }
+        if (isChanged) {
+            updateRects();
+            onRangeChanged();
+        }
+
     }
 
     private void onRangeChanged(){
         if (listener != null){
-            listener.onRangeChanged(this, start, end);
-//            Log.v("CHART START", start.toString());
-//            Log.v("CHART", end.toString());
+            //listener.onRangeChanged(this, start, end);
         }
     }
-
-
-    private OnRangeChangedListener listener;
 
     public void setListener(OnRangeChangedListener listener) {
         this.listener = listener;
     }
+
 
     public interface OnRangeChangedListener {
 

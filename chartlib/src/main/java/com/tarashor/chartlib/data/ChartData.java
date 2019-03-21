@@ -31,43 +31,43 @@ abstract class ChartData<XType extends Comparable<XType>, YType extends Comparab
         return lines.length;
     }
 
-    public YType getYMin(int index) {
-        if (index >= 0 && index < getLinesCount()) {
-            return lines[index].getMin();
-        } else {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    public YType getYMax(int index) {
-        if (index >= 0 && index < getLinesCount()) {
-            return lines[index].getMax();
-        } else {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-    }
-
-    public XType getXMin() {
-        XType min = xValues[0];
-        for (int i = 1; i < xValues.length; i++) {
-            XType x = xValues[i];
-            if (x.compareTo(min) < 0){
-                min = x;
-            }
-        }
-        return min;
-    }
-
-    public XType getXMax() {
-        XType max = xValues[0];
-        for (int i = 1; i < xValues.length; i++) {
-            XType x = xValues[i];
-            if (x.compareTo(max) > 0){
-                max = x;
-            }
-        }
-        return max;
-    }
+//    public YType getYMin(int index) {
+//        if (index >= 0 && index < getLinesCount()) {
+//            return lines[index].getMin();
+//        } else {
+//            throw new ArrayIndexOutOfBoundsException();
+//        }
+//    }
+//
+//    public YType getYMax(int index) {
+//        if (index >= 0 && index < getLinesCount()) {
+//            return lines[index].getMax();
+//        } else {
+//            throw new ArrayIndexOutOfBoundsException();
+//        }
+//    }
+//
+//    public XType getXMin() {
+//        XType min = xValues[0];
+//        for (int i = 1; i < xValues.length; i++) {
+//            XType x = xValues[i];
+//            if (x.compareTo(min) < 0){
+//                min = x;
+//            }
+//        }
+//        return min;
+//    }
+//
+//    public XType getXMax() {
+//        XType max = xValues[0];
+//        for (int i = 1; i < xValues.length; i++) {
+//            XType x = xValues[i];
+//            if (x.compareTo(max) > 0){
+//                max = x;
+//            }
+//        }
+//        return max;
+//    }
 
     public boolean isEmpty() {
         return xValues == null || lines == null || getLinesCount() == 0 || getXCount() == 0;
@@ -77,6 +77,14 @@ abstract class ChartData<XType extends Comparable<XType>, YType extends Comparab
     public int getColor(int index) {
         if (index >= 0 && index < getLinesCount()) {
             return Color.parseColor(lines[index].getColor());
+        } else {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+    }
+
+    public String getLineName(int index) {
+        if (index >= 0 && index < getLinesCount()) {
+            return lines[index].getName();
         } else {
             throw new ArrayIndexOutOfBoundsException();
         }
