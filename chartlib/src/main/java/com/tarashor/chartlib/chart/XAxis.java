@@ -54,19 +54,19 @@ class XAxis {
 //        }
         if (mViewPort == null || !mViewPort.isValid()) {
             if (viewPort != null && viewPort.isValid()) {
-                int maxNumberOfMarksOnScreen = (int) (Math.ceil((viewPort.getWidth()) / (minDistanceBetweenMarks))) - 1;
-                currentDistanceBetweenMarks = (viewPort.getWidth() - minDistanceBetweenMarks) / (maxNumberOfMarksOnScreen);
+                int maxNumberOfMarksOnScreen = (int) (Math.floor((viewPort.getWidth()) / (minDistanceBetweenMarks)))-1;
+                currentDistanceBetweenMarks = (viewPort.getWidth() - minDistanceBetweenMarks) / (maxNumberOfMarksOnScreen - maxNumberOfMarksOnScreen%2 - 1);
             }
         } else {
             if (viewPort != null) {
                 currentDistanceBetweenMarks = mViewPort.xPixelsDistanceToOtherViewPort(currentDistanceBetweenMarks, viewPort);
                 if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
                     //start animation to fade in each second
-                    currentDistanceBetweenMarks = currentDistanceBetweenMarks / 2;
+                    currentDistanceBetweenMarks = minDistanceBetweenMarks;//currentDistanceBetweenMarks / 2;
                 } else {
                     if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
                         //start animation to fade out each second
-                        currentDistanceBetweenMarks = currentDistanceBetweenMarks * 2;
+                        currentDistanceBetweenMarks = 2*minDistanceBetweenMarks;//currentDistanceBetweenMarks * 2;
                     }
                 }
                 Log.v("XAXIS", "currentDistanceBetweenMarks = " + currentDistanceBetweenMarks);
