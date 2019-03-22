@@ -1,8 +1,9 @@
 package com.tarashor.chartapp.models;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class TelegramFileData {
+public class TelegramFileData implements Serializable {
     private List<Column<Integer>> yColumns;
     private Column<Long> xColumn;
 
