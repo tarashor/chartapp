@@ -64,7 +64,7 @@ public class Chart extends BaseChartView {
         mGridPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
         mGridPaint.setColor(Color.rgb(241, 241, 242));
 
-        xAxis = new XAxis(mXTextPaint, new DateValueFormatter());
+        xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
     }
 
 

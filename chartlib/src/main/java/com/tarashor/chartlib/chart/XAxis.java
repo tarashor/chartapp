@@ -1,75 +1,74 @@
 package com.tarashor.chartlib.chart;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
+import android.view.View;
 
 import com.tarashor.chartlib.ChartViewPort;
 
 import java.util.Date;
 
-class XAxis {
+class XAxis implements ValueAnimator.AnimatorUpdateListener {
     private final Paint mTextPaint;
-    private final float minDistanceBetweenMarks;
+    private View mContainer;
     private final DateValueFormatter mValueConverter;
+
+    private final float minDistanceBetweenMarks;
     private final float markMargin;
 
     private ChartViewPort mViewPort;
 
     private float currentDistanceBetweenMarks;
     private float firstMark;
+    private float lastMark;
     private float xMinPixels;
     private float xMaxPixels;
-    private float lastMark;
+
+    private int numberOfMarks;
+
+    private ValueAnimator mAnimator;
+    private int disapperAlpha = 255;
 
 
-    public XAxis(Paint textPaint, DateValueFormatter valueConverter) {
+    public XAxis(Paint textPaint, DateValueFormatter valueConverter, View container) {
         mValueConverter = valueConverter;
         mTextPaint = textPaint;
-        String sampleMarkText = "MMM MM";//valueFormatter.format(sample);
+        mContainer = container;
+        String sampleMarkText = "MMM M";
         Rect bound = new Rect();
         textPaint.getTextBounds(sampleMarkText, 0, sampleMarkText.length(), bound);
         float oneXMarkMinWidth = Math.abs(bound.right - bound.left);
         markMargin = 0;//oneXMarkMinWidth * 0.1f;
-        float oneXMarkHeight = Math.abs(bound.top - bound.bottom);
 
         minDistanceBetweenMarks = oneXMarkMinWidth + markMargin;
 
-        currentDistanceBetweenMarks = minDistanceBetweenMarks;
-//
-//        int numberOfMarksOnScreen = (int) (Math.ceil((mViewPort.getWidth() + oneXMarkMargin) / (oneXMarkMinWidth*1.5f  + oneXMarkMargin)));
-//        minDistanceBetweenMarks = mViewPort.getWidth() / (numberOfMarksOnScreen - 1);
-//        markY = viewPort.getHeight();// - oneXMarkHeight;
-//
-//        marksX = new float[numberOfMarksOnScreen];
-//        for (int i = 0; i < numberOfMarksOnScreen; i++){
-//            marksX[i] = i * minDistanceBetweenMarks;
-//        }
+        mAnimator = new ValueAnimator();
+        mAnimator.setDuration(1000);
+        mAnimator.setIntValues(0, 255);
+        mAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation, boolean isReverse) {
+                if (isReverse) {
+                    numberOfMarks /= 2;
+                    numberOfMarks++;
+                } else {
+                    numberOfMarks *= 2;
+                    numberOfMarks--;
+                }
+            }
+        });
+        mAnimator.addUpdateListener(this);
     }
 
     public void viewPortChanged(ChartViewPort viewPort, Date xmin, Date xmax) {
-//        for (int i = 0; i < marksX.length; i++){
-//            marksX[i] = mViewPort.xPixelsToOtherViewPort(marksX[i], viewPort);
-//        }
         if (mViewPort == null || !mViewPort.isValid()) {
             if (viewPort != null && viewPort.isValid()) {
-                int maxNumberOfMarksOnScreen = (int) (Math.floor((viewPort.getWidth()) / (minDistanceBetweenMarks)))-1;
-                currentDistanceBetweenMarks = (viewPort.getWidth() - minDistanceBetweenMarks) / (maxNumberOfMarksOnScreen - maxNumberOfMarksOnScreen%2 - 1);
-            }
-        } else {
-            if (viewPort != null) {
-                currentDistanceBetweenMarks = mViewPort.xPixelsDistanceToOtherViewPort(currentDistanceBetweenMarks, viewPort);
-                if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
-                    //start animation to fade in each second
-                    currentDistanceBetweenMarks = minDistanceBetweenMarks;//currentDistanceBetweenMarks / 2;
-                } else {
-                    if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
-                        //start animation to fade out each second
-                        currentDistanceBetweenMarks = 2*minDistanceBetweenMarks;//currentDistanceBetweenMarks * 2;
-                    }
-                }
-                Log.v("XAXIS", "currentDistanceBetweenMarks = " + currentDistanceBetweenMarks);
+                numberOfMarks = (int) (Math.floor((viewPort.getWidth()) / (minDistanceBetweenMarks)))-1;
             }
         }
         mViewPort = viewPort;
@@ -77,16 +76,24 @@ class XAxis {
         if (mViewPort != null && mViewPort.isValid()) {
             xMinPixels = mViewPort.xValueToPixels(xmin);
             xMaxPixels = mViewPort.xValueToPixels(xmax);
+            currentDistanceBetweenMarks = (xMaxPixels - xMinPixels - minDistanceBetweenMarks) / (numberOfMarks - 1);
+
+            if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
+                //start animation to fade in each second
+                mAnimator.end();
+                mAnimator.start();
+
+            } else {
+                if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
+                    //start animation to fade out each second
+                    mAnimator.end();
+                    mAnimator.reverse();
+                }
+            }
+
             firstMark = xMinPixels + currentDistanceBetweenMarks + minDistanceBetweenMarks*0.5f;
             lastMark = xMaxPixels - currentDistanceBetweenMarks - minDistanceBetweenMarks*0.5f;
-            Log.v("XAXIS", "firstMark = " + firstMark);
-            Log.v("XAXIS", "lastmark = " + lastMark);
 
-//            int numberOfMarks = Math.round((lastMark - firstMark) / currentDistanceBetweenMarks) + 1;
-//            for (int i = 0; i < numberOfMarks; i++) {
-//                float x = firstMark + i * currentDistanceBetweenMarks;
-//                Log.v("XAXIS marks", "x = " + x);
-//            }
         }
 
     }
@@ -100,18 +107,17 @@ class XAxis {
             }
 
             mTextPaint.setTextAlign(Paint.Align.CENTER);
-//            for (float x = firstMark; x <= lastMark; x += currentDistanceBetweenMarks) {
-//                if (x >= 0 && x <= mViewPort.getWidth()) {
-//                    canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(x)), x, mViewPort.getHeight(), mTextPaint);
-//                }
-//            }
             int numberOfMarks = Math.round((lastMark - firstMark) / currentDistanceBetweenMarks) + 1;
             for (int i = 0; i < numberOfMarks; i++) {
                 float x = firstMark + i * currentDistanceBetweenMarks;
-                Log.v("XAXIS marks", "x = " + x);
-                //if (x >= 0 && x <= mViewPort.getWidth()) {
+                if (x >= 0 && x <= mViewPort.getWidth()) {
+                    if (i%2 == 0 && mAnimator.isRunning()){
+                        mTextPaint.setAlpha(disapperAlpha);
+                    } else {
+                        mTextPaint.setAlpha(255);
+                    }
                     canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(x)), x, mViewPort.getHeight(), mTextPaint);
-                //}
+                }
             }
 
             if (xMaxPixels <= mViewPort.getWidth()) {
@@ -119,20 +125,11 @@ class XAxis {
                 canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(xMaxPixels)), xMaxPixels, mViewPort.getHeight(), mTextPaint);
             }
         }
+    }
 
-//
-//        for (int i = 0; i < marksX.length; i++){
-//            float x = marksX[i];
-//            if (x >= 0){
-//                if (i == 0){
-//                    mTextPaint.setTextAlign(Paint.Align.LEFT);
-//                } else if (i == marksX.length - 1){
-//                    mTextPaint.setTextAlign(Paint.Align.RIGHT);
-//                } else {
-//                    mTextPaint.setTextAlign(Paint.Align.CENTER);
-//                }
-//                canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(x)), x, markY, mTextPaint);
-//            }
-//        }
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+        disapperAlpha = (int) animation.getAnimatedValue();
+        mContainer.invalidate();
     }
 }
