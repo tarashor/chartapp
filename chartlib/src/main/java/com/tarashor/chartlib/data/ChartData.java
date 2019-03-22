@@ -3,16 +3,18 @@ import android.graphics.Color;
 
 import java.util.Arrays;
 
+import androidx.core.content.res.TypedArrayUtils;
+
 abstract class ChartData<XType extends Comparable<XType>, YType extends Comparable<YType>> {
     private final XType[] xValues;
     private final Line<YType>[] lines;
 
     public ChartData(XType[] xValues, Line<YType>[] lines) {
         this.xValues = Arrays.copyOf(xValues, xValues.length);
-        this.lines = (Line<YType>[]) new Line[lines.length];
-        for (int i = 0; i < lines.length; i++){
-            this.lines[i] = lines[i].copy();
-        }
+        this.lines = (Line<YType>[]) getEnableLines(lines);
+//        for (int i = 0; i < lines.length; i++){
+//            this.lines[i] = lines[i].copy();
+//        }
     }
 
     public XType getX(int index){
@@ -68,6 +70,30 @@ abstract class ChartData<XType extends Comparable<XType>, YType extends Comparab
 //        }
 //        return max;
 //    }
+
+    public Line[] getEnableLines(Line[] lines){
+        Line[] res = new Line[getEnabledLinesCount(lines)];
+        int curIndex = 0;
+        for(int i = 0; i< lines.length; i++){
+            if(lines[i].isEnabled()){
+                res[curIndex] = lines[i];
+                curIndex++;
+            }
+        }
+
+        return res;
+    }
+
+    public int getEnabledLinesCount(Line[] lines){
+        int count = lines.length;
+        for(int i = 0; i < lines.length; i++){
+            if(!lines[i].isEnabled()){
+                count--;
+            }
+        }
+
+        return count;
+    }
 
     public boolean isEmpty() {
         return xValues == null || lines == null || getLinesCount() == 0 || getXCount() == 0;
