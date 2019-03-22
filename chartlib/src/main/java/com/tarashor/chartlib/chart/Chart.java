@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 
 import com.tarashor.chartlib.BaseChartView;
-import com.tarashor.chartlib.IValueFormatter;
+import com.tarashor.chartlib.ChartViewPort;
 import com.tarashor.chartlib.Utils;
 
 import java.util.Date;
@@ -63,6 +63,8 @@ public class Chart extends BaseChartView {
         mGridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mGridPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
         mGridPaint.setColor(Color.rgb(241, 241, 242));
+
+        xAxis = new XAxis(mXTextPaint, new DateValueFormatter());
     }
 
 
@@ -70,46 +72,47 @@ public class Chart extends BaseChartView {
     protected void drawView(Canvas canvas) {
         drawYAxis(canvas);
         drawXAxis(canvas);
-
-//
-//        if (lines != null) {
-//            for (int i = 0; i < lines.length; i++) {
-//                if (lines[i] != null) {
-//                    mLinesPaint.setColor(mLineColors[i]);
-//                    canvas.drawLines(lines[i], mLinesPaint);
-//                }
-//            }
-//        }
     }
+
 
     @Override
     protected void onDataChanged() {
         super.onDataChanged();
         if (!isEmpty()) {
-            ymax = getRealTop(ymax);
-            viewPortBuilder.setYmax(ymax);
-            viewPort = viewPortBuilder.build();
-            recalculateAllLinesToDraw();
-
-            initXAxis();
             initYAxis();
         }
     }
 
-    private void initXAxis() {
-        xAxis = new XAxis(viewPort, mXTextPaint, new DateValueFormatter());
+    @Override
+    protected void setNewViewPort(ChartViewPort newViewPort) {
+        if (newViewPort.isValid()) {
+            int newYMax = getRealTop(newViewPort.getYmax(), newViewPort);
+            viewPortBuilder
+                    .setXmin(newViewPort.getXmin())
+                    .setXmax(newViewPort.getXmax())
+                    .setYmin(newViewPort.getYmin())
+                    .setYmax(newYMax)
+                    .setBottomOffsetPixels(newViewPort.getBottomOffsetPixels())
+                    .setTopOffsetPixels(newViewPort.getTopOffsetPixels())
+                    .setHeight(newViewPort.getHeight())
+                    .setWidth(newViewPort.getWidth());
+        }
+        super.setNewViewPort(viewPortBuilder.build());
+
+        xAxis.viewPortChanged(newViewPort, xmin, xmax);
     }
+
 
     private void initYAxis() {
-        yAxis = new YAxis(viewPort, mGridPaint, mYTextPaint, new IntegerValueFormatter());
+        yAxis = new YAxis(viewPort, mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
     }
 
 
-    private int getRealTop(int yMax) {
+    private int getRealTop(int yMax, ChartViewPort newViewPort) {
         int div = 10;
         int preDiv = 1;
 
-        while (yMax % div <=  (yMax / div * div) * mTopLineOffsetPixels / (viewPort.getHeight() - viewPort.getBottomOffsetPixels() - mTopLineOffsetPixels)) {
+        while (yMax % div <=  (yMax / div * div) * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels)) {
             preDiv = div;
             div *= 10;
         }
@@ -117,7 +120,7 @@ public class Chart extends BaseChartView {
         int maxHorizontalLine = yMax / preDiv * preDiv;
         if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1)* 10;
 
-        int topRealOffset = Math.round(maxHorizontalLine * mTopLineOffsetPixels / (viewPort.getHeight() - viewPort.getBottomOffsetPixels() - mTopLineOffsetPixels));
+        int topRealOffset = Math.round(maxHorizontalLine * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels));
 
         return maxHorizontalLine + topRealOffset;
 
@@ -137,11 +140,7 @@ public class Chart extends BaseChartView {
     public void setXRange(Date start, Date end) {
         viewPortBuilder.setXmin(start);
         viewPortBuilder.setXmax(end);
-        viewPort = viewPortBuilder.build();
-        if (!isEmpty()) {
-            xAxis.viewPortChanged(viewPort);
-            recalculateAllLinesToDraw();
-        }
+        setNewViewPort(viewPortBuilder.build());
 
         invalidate();
     }

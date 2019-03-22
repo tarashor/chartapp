@@ -136,30 +136,35 @@ public class ChartRangeSelector extends BaseChartView  {
         }
     }
 
-
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
+    protected void setNewViewPort(ChartViewPort newViewPort) {
+        super.setNewViewPort(newViewPort);
+
+        leftPixels = viewPort.xValueToPixels(start);
+        rightPixels = viewPort.xValueToPixels(end);
+
+        float width = viewPort.getWidth();
+        float height = viewPort.getHeight();
 
         leftNotFilledRect.right = leftPixels;
         leftNotFilledRect.left = 0;
         leftNotFilledRect.top = 0;
-        leftNotFilledRect.bottom = h;
+        leftNotFilledRect.bottom = height;
 
         rightNotFilledRect.left = rightPixels;
-        rightNotFilledRect.right = w;
+        rightNotFilledRect.right = width;
         rightNotFilledRect.top = 0;
-        rightNotFilledRect.bottom = h;
+        rightNotFilledRect.bottom = height;
 
         leftRect.left = leftNotFilledRect.right;
         leftRect.right = leftRect.left + mPortLeftRightThicknessPixels;
         leftRect.top = 0;
-        leftRect.bottom = h;
+        leftRect.bottom = height;
 
         rightRect.right = rightNotFilledRect.left;
         rightRect.left = rightRect.right - mPortLeftRightThicknessPixels;
         rightRect.top = 0;
-        rightRect.bottom = h;
+        rightRect.bottom = height;
 
         topRect.left = leftRect.right;
         topRect.right = rightRect.left;
@@ -168,8 +173,8 @@ public class ChartRangeSelector extends BaseChartView  {
 
         bottomRect.left = leftRect.right;
         bottomRect.right = rightRect.left;
-        bottomRect.top = h - mPortTopBottomThicknessPixels;
-        bottomRect.bottom = h;
+        bottomRect.top = height - mPortTopBottomThicknessPixels;
+        bottomRect.bottom = height;
     }
 
     private void updateRects() {
@@ -192,16 +197,6 @@ public class ChartRangeSelector extends BaseChartView  {
 
     @Override
     protected void drawView(Canvas canvas) {
-//        if (lines != null) {
-//            for (int i = 0; i < lines.length; i++) {
-//                if (lines[i] != null) {
-//                    mLinesPaint.setColor(mLineColors[i]);
-//                    canvas.drawLines(lines[i], mLinesPaint);
-//                }
-//            }
-//        }
-        //canvas.drawBitmap(bitmap, 0, 0, null);
-
         canvas.drawRect(leftNotFilledRect, mNotSelectedPaint);
         canvas.drawRect(rightNotFilledRect, mNotSelectedPaint);
         canvas.drawRect(leftRect, mSelectedBorder);
@@ -216,10 +211,6 @@ public class ChartRangeSelector extends BaseChartView  {
         if (!isEmpty()) {
             start = xmin;
             end = xmax;
-            leftPixels = viewPort.xValueToPixels(start);
-            rightPixels = viewPort.xValueToPixels(end);
-            updateRects();
-
         }
     }
 
@@ -306,7 +297,7 @@ public class ChartRangeSelector extends BaseChartView  {
 
     private void onRangeChanged(){
         if (listener != null){
-            //listener.onRangeChanged(this, start, end);
+            listener.onRangeChanged(this, start, end);
         }
     }
 

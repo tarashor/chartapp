@@ -11,6 +11,7 @@ import java.util.List;
 
 class YAxis {
     private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
+    private float mTopLineOffsetPixels;
     private final Paint mGridPaint;
     private final Paint mTextPaint;
 
@@ -19,8 +20,9 @@ class YAxis {
     private ChartViewPort mViewPort;
 
     public YAxis(ChartViewPort viewPort,
-                 Paint gridPaint, Paint textPaint, IntegerValueFormatter valueFormatter) {
+                 float topLineOffsetPixels, Paint gridPaint, Paint textPaint, IntegerValueFormatter valueFormatter) {
         mViewPort = viewPort;
+        mTopLineOffsetPixels = topLineOffsetPixels;
 
         mGridPaint = gridPaint;
         mTextPaint = textPaint;
@@ -31,7 +33,7 @@ class YAxis {
 
         float bottomY = mViewPort.getHeight() - mViewPort.getBottomOffsetPixels();
 
-        float delta = (bottomY) / (GRID_HORIZONTAL_LINE_COUNT - 1);
+        float delta = (bottomY  - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
 
         ticks = new ArrayList<>();
         for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {

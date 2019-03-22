@@ -58,13 +58,14 @@ public abstract class BaseChartView extends View {
 
 
     protected void init() {
-        setWillNotDraw(false);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+//        setWillNotDraw(false);
+//        setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         viewPortBuilder = new ChartViewPortBuilder();
         viewPortBuilder
                 .setBottomOffsetPixels(Utils.convertDpToPixel(getContext(), 2))
                 .setTopOffsetPixels(Utils.convertDpToPixel(getContext(), 2));
+        viewPort = viewPortBuilder.build();
 
         mNoDataTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mNoDataTextPaint.setColor(Color.rgb(180, 180, 180));
@@ -99,24 +100,42 @@ public abstract class BaseChartView extends View {
         viewPortBuilder.setXmax(xmax).setXmin(xmin)
                 .setYmin(ymin).setYmax(ymax);
 
-        viewPort = viewPortBuilder.build();
+        setNewViewPort(viewPortBuilder.build());
 
-        recalculateAllLinesToDraw();
+    }
 
-        bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_4444);
-        Canvas canvas = new Canvas(bitmap);
-        if (lines != null) {
+    protected void setNewViewPort(ChartViewPort newViewPort) {
+        if (viewPort.isValid()) {
             for (int i = 0; i < lines.length; i++) {
-                if (lines[i] != null) {
-                    mLinesPaint.setColor(mLineColors[i]);
-                    canvas.drawLines(lines[i], mLinesPaint);
+                lines[i] = recalculateLineToDraw(lines[i], newViewPort);
+            }
+            viewPort = newViewPort;
+        } else {
+            viewPort = newViewPort;
+            if (newViewPort.isValid()) {
+                initAllLinesToDraw();
+            }
+        }
+
+        updateBitmap();
+    }
+
+    private void updateBitmap() {
+        if (bitmap != null) {
+            Canvas canvas = new Canvas(bitmap);
+            if (lines != null) {
+                for (int i = 0; i < lines.length; i++) {
+                    if (lines[i] != null) {
+                        mLinesPaint.setColor(mLineColors[i]);
+                        canvas.drawLines(lines[i], mLinesPaint);
+                    }
                 }
             }
         }
     }
 
 
-    private void calculateYMax() {
+    protected void calculateYMax() {
         ymax = 0;
         if (dataLines != null && dataLines.length > 0) {
             ymax = dataLines[0].yMax;
@@ -162,95 +181,27 @@ public abstract class BaseChartView extends View {
         return dateToIntDataLine;
     }
 
-    public void clear() {
-        mData = null;
-        invalidate();
-
-    }
-
-    public boolean isEmpty() {
-        return mData == null || mData.isEmpty();
-    }
-
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int size = (int) (Utils.convertDpToPixel(getContext(), MIN_HEIGHT_CHART_DP));
-        setMeasuredDimension(getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),
-                Math.max(getSuggestedMinimumHeight(), resolveSize(size, heightMeasureSpec)));
-    }
-
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        viewPortBuilder.setHeight(h);
-        viewPortBuilder.setWidth(w);
-        viewPort = viewPortBuilder.build();
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        if (isEmpty()) {
-            boolean hasText = !TextUtils.isEmpty(mNoDataText);
-            if (hasText) {
-                PointF c = viewPort.getCenter();
-                canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
-            }
-        } else {
-            canvas.drawBitmap(bitmap, 0, 0, null);
-            drawView(canvas);
-        }
-    }
-
-    public void setVisibilityForLine(String lineName, boolean isVisible){
-        int index = findDataLineIndexByName(lineName);
-        if (index > 0) {
-            DateToIntDataLine dataLine = dataLines[index];
-            if (dataLine != null) {
-                if (dataLine.isVisible != isVisible) {
-                    dataLine.isVisible = isVisible;
-                    int dataLineYMax = dataLine.getYMaxInRange(viewPort.getXmin(), viewPort.getXmax());
-                    if (dataLineYMax < viewPort.getYmax()) {
-                        lines[index] = recalculateLineToDraw(dataLine);
-                    } else {
-                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
-                        recalculateAllLinesToDraw();
-                    }
-                    invalidate();
-                }
-            }
-        }
-    }
-
-    private int findDataLineIndexByName(String lineName) {
-        for (int i = 0; i < dataLines.length; i++){
-            if (dataLines[i].id.equals(lineName)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    protected abstract void drawView(Canvas canvas);
-
-    protected void recalculateAllLinesToDraw() {
+    protected void initAllLinesToDraw() {
         lines = new float[dataLines.length][];
         for (int i = 0; i < dataLines.length; i++) {
-            lines[i] = recalculateLineToDraw(dataLines[i]);
+            if (dataLines[i].isVisible) {
+                lines[i] = convertPointsToLine(dataLines[i].points);
+            } else {
+                lines[i] = null;
+            }
         }
     }
 
-    protected float[] recalculateLineToDraw(DateToIntDataLine dataLine) {
-        if (dataLine.isVisible)
-            return convertPointsToLine(dataLine.points);
-        else
-            return null;
+    protected float[] recalculateLineToDraw(float[] line, ChartViewPort chartViewPort) {
+        float[] newLine = null;
+        if (chartViewPort.isValid() && line != null) {
+            newLine = new float[line.length];
+            for (int i = 0; i < line.length; i+= 2) {
+                newLine[i] = chartViewPort.xPixelsToOtherViewPort(line[i], chartViewPort);
+                newLine[i+1] = chartViewPort.yPixelsToOtherViewPort(line[i+1], chartViewPort);
+            }
+        }
+        return newLine;
     }
 
 
@@ -276,6 +227,88 @@ public abstract class BaseChartView extends View {
         }
 
         return line;
+    }
+
+    public void clear() {
+        mData = null;
+        invalidate();
+
+    }
+
+    public boolean isEmpty() {
+        return mData == null || mData.isEmpty();
+    }
+
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int size = (int) (Utils.convertDpToPixel(getContext(), MIN_HEIGHT_CHART_DP));
+        setMeasuredDimension(getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),
+                Math.max(getSuggestedMinimumHeight(), resolveSize(size, heightMeasureSpec)));
+    }
+
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_4444);
+
+        viewPortBuilder.setHeight(h);
+        viewPortBuilder.setWidth(w);
+        setNewViewPort(viewPortBuilder.build());
+
+        invalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        if (isEmpty()) {
+            boolean hasText = !TextUtils.isEmpty(mNoDataText);
+            if (hasText) {
+                PointF c = viewPort.getCenter();
+                canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
+            }
+        } else {
+            canvas.drawBitmap(bitmap, 0, 0, null);
+            drawView(canvas);
+        }
+    }
+
+    protected abstract void drawView(Canvas canvas);
+
+
+
+    public void setVisibilityForLine(String lineName, boolean isVisible){
+        int index = findDataLineIndexByName(lineName);
+        if (index > 0) {
+            DateToIntDataLine dataLine = dataLines[index];
+            if (dataLine != null) {
+                if (dataLine.isVisible != isVisible) {
+                    dataLine.isVisible = isVisible;
+                    int dataLineYMax = dataLine.getYMaxInRange(viewPort.getXmin(), viewPort.getXmax());
+                    if (dataLineYMax < viewPort.getYmax()) {
+                        lines[index] = convertPointsToLine(dataLine.points);
+                    } else {
+                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
+                        initAllLinesToDraw();
+                    }
+                    invalidate();
+                }
+            }
+        }
+    }
+
+    private int findDataLineIndexByName(String lineName) {
+        for (int i = 0; i < dataLines.length; i++){
+            if (dataLines[i].id.equals(lineName)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 

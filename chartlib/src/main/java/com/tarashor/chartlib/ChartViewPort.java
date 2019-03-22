@@ -1,9 +1,11 @@
 package com.tarashor.chartlib;
 
 import android.graphics.PointF;
+import android.util.TimeUtils;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class ChartViewPort {
     private final Date xmin;
@@ -104,6 +106,7 @@ public class ChartViewPort {
         return ymin + Math.round((height - bottomOffsetPixels - pixels) * yScaleValue);
     }
 
+
     private float convertDateToFloat(Date date){
         if (date == null) return 0;
         return date.getTime();
@@ -114,9 +117,24 @@ public class ChartViewPort {
     }
 
 
+    public boolean isValid() {
+        return xScaleValue > 0 && yScaleValue > 0;
+    }
+
+
     public float xPixelsToOtherViewPort(float x, ChartViewPort other) {
-        if (xScaleValue > 0)
-            return (x / xScaleValue + convertDateToFloat(xmin) - convertDateToFloat(other.xmin))*other.xScaleValue;
+        if (other.xScaleValue > 0)
+            return (x * xScaleValue + convertDateToFloat(xmin) - convertDateToFloat(other.xmin)) / other.xScaleValue;
         return 0;
+    }
+
+    public float xPixelsDistanceToOtherViewPort(float xDistance, ChartViewPort other) {
+        if (other.xScaleValue > 0)
+            return (xDistance * xScaleValue) / other.xScaleValue;
+        return 0;
+    }
+
+    public float yPixelsToOtherViewPort(float y, ChartViewPort other) {
+        return other.yValueToPixels(yPixelsToValue(y));
     }
 }
