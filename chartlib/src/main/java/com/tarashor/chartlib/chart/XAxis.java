@@ -68,7 +68,7 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
     public void viewPortChanged(ChartViewPort viewPort, Date xmin, Date xmax) {
         if (mViewPort == null || !mViewPort.isValid()) {
             if (viewPort != null && viewPort.isValid()) {
-                numberOfMarks = (int) (Math.floor((viewPort.getWidth()) / (minDistanceBetweenMarks)))-1;
+                numberOfMarks = (int) (Math.floor((viewPort.getWidth()) / (minDistanceBetweenMarks))) - 1;
             }
         }
         mViewPort = viewPort;
@@ -78,32 +78,19 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
             xMaxPixels = mViewPort.xValueToPixels(xmax);
             currentDistanceBetweenMarks = (xMaxPixels - xMinPixels - minDistanceBetweenMarks) / (numberOfMarks - 1);
 
-            if (currentDistanceBetweenMarks >= 1.5 * minDistanceBetweenMarks) {
-                //start animation to fade in each second
-                disapperAlpha = Math.round((currentDistanceBetweenMarks - 1.5f * minDistanceBetweenMarks) / (0.5f*minDistanceBetweenMarks) * 255);
-                if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
-                    numberOfMarks *= 2;
-                    numberOfMarks--;
-                    disapperAlpha = 255;
-                }
-
-            } else {
-                if (currentDistanceBetweenMarks < 1.5 * minDistanceBetweenMarks) {
-                    //start animation to fade out each second
-                    disapperAlpha = 255 - Math.round((1.5f*minDistanceBetweenMarks - currentDistanceBetweenMarks) / (0.5f*minDistanceBetweenMarks) * 255);
-                    if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
-                        numberOfMarks /= 2;
-                        numberOfMarks++;
-                        disapperAlpha = 255;
-                    }
-                }
+            if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
+                numberOfMarks *= 2;
+                numberOfMarks--;
+                disapperAlpha = 255;
+            } else if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
+                numberOfMarks /= 2;
+                numberOfMarks++;
+                disapperAlpha = 255;
             }
 
-            firstMark = xMinPixels + currentDistanceBetweenMarks + minDistanceBetweenMarks*0.5f;
-            lastMark = xMaxPixels - currentDistanceBetweenMarks - minDistanceBetweenMarks*0.5f;
-
+            firstMark = xMinPixels + currentDistanceBetweenMarks + minDistanceBetweenMarks * 0.5f;
+            lastMark = xMaxPixels - currentDistanceBetweenMarks - minDistanceBetweenMarks * 0.5f;
         }
-
     }
 
 
