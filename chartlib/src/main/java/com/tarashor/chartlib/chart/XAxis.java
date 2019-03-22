@@ -47,22 +47,22 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
 
         minDistanceBetweenMarks = oneXMarkMinWidth + markMargin;
 
-        mAnimator = new ValueAnimator();
-        mAnimator.setDuration(1000);
-        mAnimator.setIntValues(0, 255);
-        mAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation, boolean isReverse) {
-                if (isReverse) {
-                    numberOfMarks /= 2;
-                    numberOfMarks++;
-                } else {
-                    numberOfMarks *= 2;
-                    numberOfMarks--;
-                }
-            }
-        });
-        mAnimator.addUpdateListener(this);
+//        mAnimator = new ValueAnimator();
+//        mAnimator.setDuration(1000);
+//        mAnimator.setIntValues(0, 255);
+//        mAnimator.addListener(new AnimatorListenerAdapter() {
+//            @Override
+//            public void onAnimationEnd(Animator animation, boolean isReverse) {
+//                if (isReverse) {
+//                    numberOfMarks /= 2;
+//                    numberOfMarks++;
+//                } else {
+//                    numberOfMarks *= 2;
+//                    numberOfMarks--;
+//                }
+//            }
+//        });
+//        mAnimator.addUpdateListener(this);
     }
 
     public void viewPortChanged(ChartViewPort viewPort, Date xmin, Date xmax) {
@@ -78,16 +78,24 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
             xMaxPixels = mViewPort.xValueToPixels(xmax);
             currentDistanceBetweenMarks = (xMaxPixels - xMinPixels - minDistanceBetweenMarks) / (numberOfMarks - 1);
 
-            if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
+            if (currentDistanceBetweenMarks >= 1.5 * minDistanceBetweenMarks) {
                 //start animation to fade in each second
-                mAnimator.end();
-                mAnimator.start();
+                disapperAlpha = Math.round((currentDistanceBetweenMarks - 1.5f * minDistanceBetweenMarks) / (0.5f*minDistanceBetweenMarks) * 255);
+                if (currentDistanceBetweenMarks >= 2 * minDistanceBetweenMarks) {
+                    numberOfMarks *= 2;
+                    numberOfMarks--;
+                    disapperAlpha = 255;
+                }
 
             } else {
-                if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
+                if (currentDistanceBetweenMarks < 1.5 * minDistanceBetweenMarks) {
                     //start animation to fade out each second
-                    mAnimator.end();
-                    mAnimator.reverse();
+                    disapperAlpha = 255 - Math.round((1.5f*minDistanceBetweenMarks - currentDistanceBetweenMarks) / (0.5f*minDistanceBetweenMarks) * 255);
+                    if (currentDistanceBetweenMarks < minDistanceBetweenMarks) {
+                        numberOfMarks /= 2;
+                        numberOfMarks++;
+                        disapperAlpha = 255;
+                    }
                 }
             }
 
@@ -103,6 +111,7 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
         if (mViewPort != null && mViewPort.isValid()) {
             if (xMinPixels >= 0) {
                 mTextPaint.setTextAlign(Paint.Align.LEFT);
+                mTextPaint.setAlpha(255);
                 canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(xMinPixels)), xMinPixels, mViewPort.getHeight(), mTextPaint);
             }
 
@@ -111,7 +120,7 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
             for (int i = 0; i < numberOfMarks; i++) {
                 float x = firstMark + i * currentDistanceBetweenMarks;
                 if (x >= 0 && x <= mViewPort.getWidth()) {
-                    if (i%2 == 0 && mAnimator.isRunning()){
+                    if (i % 2 == 0){
                         mTextPaint.setAlpha(disapperAlpha);
                     } else {
                         mTextPaint.setAlpha(255);
@@ -122,6 +131,7 @@ class XAxis implements ValueAnimator.AnimatorUpdateListener {
 
             if (xMaxPixels <= mViewPort.getWidth()) {
                 mTextPaint.setTextAlign(Paint.Align.RIGHT);
+                mTextPaint.setAlpha(255);
                 canvas.drawText(mValueConverter.format(mViewPort.xPixelsToValue(xMaxPixels)), xMaxPixels, mViewPort.getHeight(), mTextPaint);
             }
         }
