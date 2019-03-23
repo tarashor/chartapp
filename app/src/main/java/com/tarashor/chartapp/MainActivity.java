@@ -4,9 +4,11 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
 import com.tarashor.chartapp.models.TelegramFileData;
+import com.tarashor.chartapp.view.ChartView;
 import com.tarashor.chartapp.view.LinesListView;
 import com.tarashor.chartlib.TelegramChart;
 import com.tarashor.chartlib.data.DateToIntChartData;
@@ -18,40 +20,28 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TelegramChart telegramChart;
-    private int chartIndex = 4;
-
     private List<TelegramFileData> telegramFileData;
-    private LinesListView checkBoxList;
-    private CheckBoxAdapter checkBoxAdapter;
+    private LinearLayout chartContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        telegramChart = findViewById(R.id.chart);
-
         ChartJsonParser parser = new ChartJsonParser();
         telegramFileData = parser.parseColumns(this);
-        checkBoxList = findViewById(R.id.checkbox_list);
-        checkBoxList.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
-            @Override
-            public void onChange(boolean checked, String name) {
-                telegramChart.setVisibilityForLine(name, checked);
-            }
-        });
+        chartContainer = findViewById(R.id.chart_container);
 
-        setData(chartIndex);
+        setData();
     }
 
 
-    private void setData(int chartIndex) {
-        if(chartIndex < telegramFileData.size()) {
-            DateToIntChartData chartData = new ChartToChartDataConverter().convert(telegramFileData.get(chartIndex));
-            telegramChart.setData(chartData);
-            checkBoxList.setData(chartData);
+    private void setData() {
+        ChartToChartDataConverter chartToChartDataConverter = new ChartToChartDataConverter();
+        for(TelegramFileData fileData : telegramFileData){
+            ChartView chartView = new ChartView(this);
+            chartView.setData(chartToChartDataConverter.convert(fileData));
+            chartContainer.addView(chartView);
         }
-
     }
 
 

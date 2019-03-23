@@ -3,6 +3,7 @@ package com.tarashor.chartapp.view;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Build;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
@@ -171,4 +172,9 @@ public class LinesListView  extends LinearLayout {
         }
     }
 
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        return super.onSaveInstanceState();
+    }
 }

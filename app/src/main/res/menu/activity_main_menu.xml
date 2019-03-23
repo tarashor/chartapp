@@ -4,6 +4,6 @@
         android:id="@+id/night_mode"
         android:title=""
         app:showAsAction="always"
-        android:icon="@android:drawable/btn_star_big_on"
-        />
+        android:icon="@drawable/moon"
+        app:iconTint="@android:color/white"/>
 </menu>

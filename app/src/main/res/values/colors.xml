@@ -5,4 +5,5 @@
     <color name="colorAccent">#D81B60</color>
     <color name="windowBackground">#FFFFFF</color>
     <color name="chart_title_color">#8CC3F7</color>
+    <color name="chart_lines_name_color">#000000</color>
 </resources>
