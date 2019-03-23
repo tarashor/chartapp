@@ -58,5 +58,10 @@ public class TelegramChart extends LinearLayout {
         rangeSelector.setData(data);
     }
 
+    public void setVisibilityForLine(String lineName, boolean isVisible){
+        chart.setVisibilityForLine(lineName, isVisible);
+        rangeSelector.setVisibilityForLine(lineName, isVisible);
+    }
+
 
 }

@@ -161,7 +161,7 @@ public abstract class BaseChartView extends View{
             Canvas canvas = new Canvas(bitmap);
             if (lines != null) {
                 for (int i = 0; i < lines.length; i++) {
-                    if (lines[i] != null) {
+                    if (lines[i] != null && dataLines[i] != null && dataLines[i].isVisible) {
                         mLinesPaint.setColor(mLineColors[i]);
                         canvas.drawLines(lines[i], mLinesPaint);
                     }
@@ -204,11 +204,7 @@ public abstract class BaseChartView extends View{
     protected void initAllLinesToDraw() {
         lines = new float[dataLines.length][];
         for (int i = 0; i < dataLines.length; i++) {
-            if (dataLines[i].isVisible) {
-                lines[i] = convertPointsToLine(dataLines[i].points);
-            } else {
-                lines[i] = null;
-            }
+            lines[i] = convertPointsToLine(dataLines[i].points);
         }
     }
 
@@ -300,18 +296,20 @@ public abstract class BaseChartView extends View{
 
     public void setVisibilityForLine(String lineName, boolean isVisible){
         int index = findDataLineIndexByName(lineName);
-        if (index > 0) {
+        if (index >= 0) {
             DateToIntDataLine dataLine = dataLines[index];
             if (dataLine != null) {
                 if (dataLine.isVisible != isVisible) {
                     dataLine.isVisible = isVisible;
-                    int dataLineYMax = dataLine.getYMaxInRange(viewPort.getXmin(), viewPort.getXmax());
-                    if (dataLineYMax < viewPort.getYmax()) {
-                        lines[index] = convertPointsToLine(dataLine.points);
-                    } else {
-                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
-                        initAllLinesToDraw();
-                    }
+                    int dataLineYMax = getYMaxForRange(viewPort.getXmin(), viewPort.getXmax());
+                    setNewYmaxForViewPort(dataLineYMax);
+                    updateBitmap();
+//                    if (dataLineYMax < viewPort.getYmax()) {
+//                        lines[index] = convertPointsToLine(dataLine.points);
+//                    } else {
+//                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
+//                        initAllLinesToDraw();
+//                    }
                     invalidate();
                 }
             }

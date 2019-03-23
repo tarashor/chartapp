@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         ChartJsonParser parser = new ChartJsonParser();
         telegramFileData = parser.parseColumns(this);
         checkBoxList = findViewById(R.id.checkbox_list);
+        checkBoxList.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                telegramChart.setVisibilityForLine(name, checked);
+            }
+        });
 
         setData(chartIndex);
     }
