@@ -93,16 +93,50 @@ public abstract class BaseChartView extends View{
             dataLines[i] = createDataLine(mData, i);
             mLineColors[i] = mData.getColor(i);
         }
-
         calculateXMinAndXMax();
-        ymin = 0;
-        calculateYMax();
 
-        viewPortBuilder.setXmax(xmax).setXmin(xmin)
-                .setYmin(ymin).setYmax(ymax);
+        setRangeInternal(xmin, xmax);
+    }
 
+    public void setRange(Date start, Date end) {
+        setRangeInternal(start, end);
+
+        invalidate();
+    }
+
+    private void setRangeInternal(Date start, Date end) {
+        setNewXForViewPort(start, end);
+
+        int yMax = getYMaxForRange(start, end);
+
+        setNewYmaxForViewPort(yMax);
+
+    }
+
+    private int getYMaxForRange(Date start, Date end) {
+        int yMax = 0;
+        for (DateToIntDataLine dataLine : dataLines){
+            if (dataLine.isVisible) {
+                int dataLineYMax = dataLine.getYMaxInRange(start, end);
+                if (dataLineYMax > yMax) {
+                    yMax = dataLineYMax;
+                }
+            }
+        }
+        return yMax;
+    }
+
+    protected void setNewXForViewPort(Date start, Date end){
+        viewPortBuilder.setXmin(start);
+        viewPortBuilder.setXmax(end);
         setNewViewPort(viewPortBuilder.build());
+    }
 
+    protected void setNewYmaxForViewPort(int yMax) {
+        if (yMax != viewPort.getYmax()) {
+            viewPortBuilder.setYmax(yMax);
+            setNewViewPort(viewPortBuilder.build());
+        }
     }
 
     protected void setNewViewPort(ChartViewPort newViewPort) {
@@ -130,22 +164,6 @@ public abstract class BaseChartView extends View{
                     if (lines[i] != null) {
                         mLinesPaint.setColor(mLineColors[i]);
                         canvas.drawLines(lines[i], mLinesPaint);
-                    }
-                }
-            }
-        }
-    }
-
-
-    protected void calculateYMax() {
-        ymax = 0;
-        if (dataLines != null && dataLines.length > 0) {
-            ymax = dataLines[0].yMax;
-            for (int i = 1; i < dataLines.length; i++) {
-                if (dataLines[i].isVisible) {
-                    int currentMax = dataLines[i].yMax;
-                    if (ymax < currentMax) {
-                        ymax = currentMax;
                     }
                 }
             }
@@ -321,10 +339,11 @@ public abstract class BaseChartView extends View{
             if (index < 0) index = -index - 1;
             int ymax = points[index].getY();
             index++;
-            while (points[index].getX().before(end) || index < points.length){
+            while (index < points.length && points[index].getX().before(end)){
                 if (ymax < points[index].getY()){
                     ymax = points[index].getY();
                 }
+                index++;
             }
             return ymax;
         }

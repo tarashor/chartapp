@@ -47,7 +47,7 @@ public class TelegramChart extends LinearLayout {
         rangeSelector.setListener(new ChartRangeSelector.OnRangeChangedListener() {
             @Override
             public void onRangeChanged(ChartRangeSelector v, Date start, Date end) {
-                chart.setXRange(start, end);
+                chart.setRange(start, end);
             }
         });
     }

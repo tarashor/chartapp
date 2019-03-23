@@ -82,41 +82,46 @@ public class Chart extends BaseChartView {
 
     @Override
     protected void setNewViewPort(ChartViewPort newViewPort) {
-        if (newViewPort.isValid()) {
-            int newYMax = getRealTop(newViewPort.getYmax(), newViewPort);
-            viewPortBuilder
-                    .setXmin(newViewPort.getXmin())
-                    .setXmax(newViewPort.getXmax())
-                    .setYmin(newViewPort.getYmin())
-                    .setYmax(newYMax)
-                    .setBottomOffsetPixels(newViewPort.getBottomOffsetPixels())
-                    .setTopOffsetPixels(newViewPort.getTopOffsetPixels())
-                    .setHeight(newViewPort.getHeight())
-                    .setWidth(newViewPort.getWidth());
-        }
-        super.setNewViewPort(viewPortBuilder.build());
-
-        xAxis.viewPortChanged(newViewPort, xmin, xmax);
-        yAxis.viewPortChanged(newViewPort);
+        super.setNewViewPort(newViewPort);
+        xAxis.viewPortChanged(viewPort, xmin, xmax);
+        yAxis.viewPortChanged(viewPort);
     }
 
+    @Override
+    protected void setNewXForViewPort(Date start, Date end) {
+        super.setNewXForViewPort(start, end);
 
+    }
+
+    @Override
+    protected void setNewYmaxForViewPort(int yMax) {
+        yMax = getRealTop(yMax, viewPortBuilder.setYmax(yMax).build());
+        super.setNewYmaxForViewPort(yMax);
+
+    }
 
     private int getRealTop(int yMax, ChartViewPort newViewPort) {
-        int div = 10;
-        int preDiv = 1;
+        if (newViewPort != null) {
+            if (yMax == 0) return 0;
+            if (!newViewPort.isValid()) return yMax;
 
-        while (yMax % div <=  (yMax / div * div) * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels)) {
-            preDiv = div;
-            div *= 10;
+            int div = 10;
+            int preDiv = 1;
+
+            while (yMax % div <= (yMax / div * div) * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels)) {
+                preDiv = div;
+                div *= 10;
+            }
+
+            int maxHorizontalLine = yMax / preDiv * preDiv;
+            if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1) * 10;
+
+            int topRealOffset = Math.round(maxHorizontalLine * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels));
+
+            return maxHorizontalLine + topRealOffset;
         }
 
-        int maxHorizontalLine = yMax / preDiv * preDiv;
-        if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1)* 10;
-
-        int topRealOffset = Math.round(maxHorizontalLine * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels));
-
-        return maxHorizontalLine + topRealOffset;
+        return 0;
 
     }
 
@@ -131,11 +136,4 @@ public class Chart extends BaseChartView {
             yAxis.draw(canvas);
     }
 
-    public void setXRange(Date start, Date end) {
-        viewPortBuilder.setXmin(start);
-        viewPortBuilder.setXmax(end);
-        setNewViewPort(viewPortBuilder.build());
-
-        invalidate();
-    }
 }
