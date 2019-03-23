@@ -4,4 +4,7 @@
     <color name="windowBackground">#1F2732</color>
     <color name="colorPrimaryDark">#1C242D</color>
     <color name="chart_lines_name_color">#FFFFFF</color>
+
+    <color name="gridColor">#161F2B</color>
+    <color name="marksTextColor">#506372</color>
 </resources>

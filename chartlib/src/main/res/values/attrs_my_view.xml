@@ -1,0 +1,10 @@
+<resources>
+    <declare-styleable name="TelegramChart">
+        <attr name="gridColor" format="color"/>
+        <attr name="marksTextColor" format="color"/>
+        <attr name="pointerLineColor" format="color"/>
+        <attr name="pointerTextHeaderColor" format="color"/>
+        <attr name="pointerPopupBackground" format="color"/>
+        <attr name="pointerPopupBorderColor" format="color"/>
+    </declare-styleable>
+</resources>

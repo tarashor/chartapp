@@ -17,6 +17,13 @@ public class Chart extends BaseChartView {
     protected final static int AXIS_TEXT_SIZE_DP = 16;
     protected final static int AXIS_TEXT_AREA_HEIGHT_DP = AXIS_TEXT_SIZE_DP + 4;
 
+    private int mGridColor;
+    private int mMarksTextColor;
+    private int mPointerLineColor;
+    private int mPopupTextHeaderColor;
+    private int mPopupBackground;
+    private int mPopupBorderColor;
+
     protected Paint mYTextPaint;
     protected Paint mXTextPaint;
 
@@ -66,6 +73,18 @@ public class Chart extends BaseChartView {
 
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
         yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
+    }
+
+    public void setColorsForPaints(
+            int gridColor,
+            int marksTextColor,
+            int pointerLineColor,
+            int popupTextHeaderColor,
+            int popupBackground,
+            int popupBorderColor){
+        mYTextPaint.setColor(marksTextColor);
+        mXTextPaint.setColor(marksTextColor);
+        mGridPaint.setColor(gridColor);
     }
 
     @Override
