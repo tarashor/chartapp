@@ -286,9 +286,7 @@ public abstract class BaseChartView extends View{
         }
     }
 
-    protected void drawUnderView(Canvas canvas){
-
-    }
+    protected void drawUnderView(Canvas canvas){}
 
     protected void drawOverView(Canvas canvas){}
 
@@ -303,13 +301,8 @@ public abstract class BaseChartView extends View{
                     dataLine.isVisible = isVisible;
                     int dataLineYMax = getYMaxForRange(viewPort.getXmin(), viewPort.getXmax());
                     setNewYmaxForViewPort(dataLineYMax);
+
                     updateBitmap();
-//                    if (dataLineYMax < viewPort.getYmax()) {
-//                        lines[index] = convertPointsToLine(dataLine.points);
-//                    } else {
-//                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
-//                        initAllLinesToDraw();
-//                    }
                     invalidate();
                 }
             }

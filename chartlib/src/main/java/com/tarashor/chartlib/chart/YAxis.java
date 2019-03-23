@@ -72,9 +72,9 @@ class YAxis {
 //        }
 
         float bottomY = newViewPort.getHeight() - newViewPort.getBottomOffsetPixels();
-        float delta = (bottomY - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
+        float delta = (bottomY - newViewPort.getTopOffsetPixels() - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
 
-        newTicks = new ArrayList<>();
+        //newTicks = new ArrayList<>();
         for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
             float y = bottomY - delta * i;
             int v = newViewPort.yPixelsToValue(y);

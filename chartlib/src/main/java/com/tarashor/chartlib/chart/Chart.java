@@ -101,22 +101,11 @@ public class Chart extends BaseChartView {
 
     @Override
     protected void setNewViewPort(ChartViewPort newViewPort) {
-        super.setNewViewPort(newViewPort);
+        int yMax = getRealTop(newViewPort.getYmax(), newViewPort);
+        viewPortBuilder.setYmax(yMax);
+        super.setNewViewPort(viewPortBuilder.build());
         xAxis.viewPortChanged(viewPort, xmin, xmax);
         yAxis.viewPortChanged(viewPort);
-    }
-
-    @Override
-    protected void setNewXForViewPort(Date start, Date end) {
-        super.setNewXForViewPort(start, end);
-
-    }
-
-    @Override
-    protected void setNewYmaxForViewPort(int yMax) {
-        yMax = getRealTop(yMax, viewPortBuilder.setYmax(yMax).build());
-        super.setNewYmaxForViewPort(yMax);
-
     }
 
     private int getRealTop(int yMax, ChartViewPort newViewPort) {
@@ -127,17 +116,19 @@ public class Chart extends BaseChartView {
             int div = 10;
             int preDiv = 1;
 
-            while (yMax % div <= (yMax / div * div) * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels)) {
+            float heightFromZeroToLastHorizontalLine = newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - newViewPort.getTopOffsetPixels() - mTopLineOffsetPixels;
+
+            while (yMax % div <= (yMax / div * div) * mTopLineOffsetPixels / (heightFromZeroToLastHorizontalLine)) {
                 preDiv = div;
                 div *= 10;
             }
 
-            int maxHorizontalLine = yMax / preDiv * preDiv;
-            if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1) * 10;
+            int lastHorizontalLineValue = yMax / preDiv * preDiv;
+            if (preDiv == 1) lastHorizontalLineValue = (yMax / 10 + 1) * 10;
 
-            int topRealOffset = Math.round(maxHorizontalLine * mTopLineOffsetPixels / (newViewPort.getHeight() - newViewPort.getBottomOffsetPixels() - mTopLineOffsetPixels));
+            int topRealOffset = Math.round(lastHorizontalLineValue * mTopLineOffsetPixels / heightFromZeroToLastHorizontalLine);
 
-            return maxHorizontalLine + topRealOffset;
+            return lastHorizontalLineValue + topRealOffset;
         }
 
         return 0;
