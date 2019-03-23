@@ -3,4 +3,5 @@
     <color name="colorPrimary">#232D3A</color>
     <color name="windowBackground">#1F2732</color>
     <color name="colorPrimaryDark">#1C242D</color>
+    <color name="chart_lines_name_color">#FFFFFF</color>
 </resources>
