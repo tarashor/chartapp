@@ -68,11 +68,16 @@ public class Chart extends BaseChartView {
         yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
     }
 
-
     @Override
-    protected void drawView(Canvas canvas) {
+    protected void drawUnderView(Canvas canvas) {
+        super.drawUnderView(canvas);
         drawYAxis(canvas);
         drawXAxis(canvas);
+    }
+
+    @Override
+    protected void drawOverView(Canvas canvas) {
+
     }
 
     @Override

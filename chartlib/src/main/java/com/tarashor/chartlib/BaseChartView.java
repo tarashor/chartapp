@@ -16,7 +16,8 @@ import com.tarashor.chartlib.data.DateToIntChartData;
 import java.util.Arrays;
 import java.util.Date;
 
-public abstract class BaseChartView extends View {
+
+public abstract class BaseChartView extends View{
     protected final static int MIN_HEIGHT_CHART_DP = 38;
 
     protected DateToIntChartData mData = null;
@@ -208,26 +209,17 @@ public abstract class BaseChartView extends View {
 
     protected float[] convertPointsToLine(DateToIntDataPoint[] points) {
 
-        float[] pointsInPixes = new float[points.length * 2];
+        float[] line = new float[(points.length - 1) * 4];
 
-        for (int i = 0; i < points.length; i++){
-            pointsInPixes[2 * i] = viewPort.xValueToPixels(points[i].getX());
-            pointsInPixes[2 * i + 1] = viewPort.yValueToPixels(points[i].getY());;
-        }
-
-        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 2);
-
-
-        float[] line = new float[(pointsInPixes.length - 2) * 2];
-
-        for (int i = 0; i < pointsInPixes.length - 2; i+=2){
-            line[2 * i] = pointsInPixes[i];
-            line[2 * i + 1] = pointsInPixes[i+1];
-            line[2 * i + 2] = pointsInPixes[i+2];
-            line[2 * i + 3] = pointsInPixes[i+3];
+        for (int i = 0; i < points.length - 1; i++){
+            line[4 * i] = viewPort.xValueToPixels(points[i].getX());
+            line[4 * i + 1] = viewPort.yValueToPixels(points[i].getY());
+            line[4 * i + 2] = viewPort.xValueToPixels(points[i + 1].getX());
+            line[4 * i + 3] = viewPort.yValueToPixels(points[i + 1].getY());
         }
 
         return line;
+
     }
 
     public void clear() {
@@ -274,12 +266,17 @@ public abstract class BaseChartView extends View {
                 canvas.drawText(mNoDataText, c.x, c.y, mNoDataTextPaint);
             }
         } else {
+            drawUnderView(canvas);
             canvas.drawBitmap(bitmap, 0, 0, null);
-            drawView(canvas);
+            drawOverView(canvas);
         }
     }
 
-    protected abstract void drawView(Canvas canvas);
+    protected void drawUnderView(Canvas canvas){
+
+    }
+
+    protected void drawOverView(Canvas canvas){}
 
 
 

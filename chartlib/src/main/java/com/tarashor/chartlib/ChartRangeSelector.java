@@ -1,7 +1,6 @@
 package com.tarashor.chartlib;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -14,7 +13,7 @@ import java.util.Date;
 
 import androidx.core.view.GestureDetectorCompat;
 
-public class ChartRangeSelector extends BaseChartView  {
+public class ChartRangeSelector extends BaseChartView {
 
     private final RectF leftNotFilledRect = new RectF();
     private final RectF rightNotFilledRect = new RectF();
@@ -75,13 +74,14 @@ public class ChartRangeSelector extends BaseChartView  {
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
                 moveBy(-distanceX, mDragMode);
-                return super.onScroll(e1, e2, distanceX, distanceY);
+                return true;//super.onScroll(e1, e2, distanceX, distanceY);
             }
 
             @Override
             public boolean onDown(MotionEvent event) {
                 float x = event.getX();
                 float y = event.getY();
+                getParent().requestDisallowInterceptTouchEvent(true);
                 if (leftRect.left <= x && x <= leftRect.right) {
                     mDragMode = DragMode.LEFT;
                     return true;
@@ -96,18 +96,22 @@ public class ChartRangeSelector extends BaseChartView  {
                     return super.onDown(event);
                 }
             }
-
-
         });
     }
-
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mDetector.onTouchEvent(event))
             return true;
-        else return super.onTouchEvent(event);
+        else {
+            switch (event.getAction()){
+                case MotionEvent.ACTION_UP:
+                    getParent().requestDisallowInterceptTouchEvent(false);
+
+                    break;
+            }
+        }
+        return super.onTouchEvent(event);
 
     }
 
@@ -196,7 +200,7 @@ public class ChartRangeSelector extends BaseChartView  {
 
 
     @Override
-    protected void drawView(Canvas canvas) {
+    protected void drawOverView(Canvas canvas) {
         canvas.drawRect(leftNotFilledRect, mNotSelectedPaint);
         canvas.drawRect(rightNotFilledRect, mNotSelectedPaint);
         canvas.drawRect(leftRect, mSelectedBorder);
@@ -214,7 +218,29 @@ public class ChartRangeSelector extends BaseChartView  {
         }
     }
 
+    @Override
+    protected float[] convertPointsToLine(DateToIntDataPoint[] points) {
+        float[] pointsInPixes = new float[points.length * 2];
 
+        for (int i = 0; i < points.length; i++){
+            pointsInPixes[2 * i] = viewPort.xValueToPixels(points[i].getX());
+            pointsInPixes[2 * i + 1] = viewPort.yValueToPixels(points[i].getY());;
+        }
+
+        pointsInPixes = Approximator.reduceWithDouglasPeucker(pointsInPixes, 2);
+
+
+        float[] line = new float[(pointsInPixes.length - 2) * 2];
+
+        for (int i = 0; i < pointsInPixes.length - 2; i+=2){
+            line[2 * i] = pointsInPixes[i];
+            line[2 * i + 1] = pointsInPixes[i+1];
+            line[2 * i + 2] = pointsInPixes[i+2];
+            line[2 * i + 3] = pointsInPixes[i+3];
+        }
+
+        return line;
+    }
 
     public Date getStart() {
         return start;
@@ -304,6 +330,7 @@ public class ChartRangeSelector extends BaseChartView  {
     public void setListener(OnRangeChangedListener listener) {
         this.listener = listener;
     }
+
 
 
     public interface OnRangeChangedListener {
