@@ -122,6 +122,7 @@ public abstract class BaseChartView extends View {
 
     private void updateBitmap() {
         if (bitmap != null) {
+            bitmap.eraseColor(Color.TRANSPARENT);
             Canvas canvas = new Canvas(bitmap);
             if (lines != null) {
                 for (int i = 0; i < lines.length; i++) {
@@ -197,8 +198,8 @@ public abstract class BaseChartView extends View {
         if (chartViewPort.isValid() && line != null) {
             newLine = new float[line.length];
             for (int i = 0; i < line.length; i+= 2) {
-                newLine[i] = chartViewPort.xPixelsToOtherViewPort(line[i], chartViewPort);
-                newLine[i+1] = chartViewPort.yPixelsToOtherViewPort(line[i+1], chartViewPort);
+                newLine[i] = viewPort.xPixelsToOtherViewPort(line[i], chartViewPort);
+                newLine[i+1] = viewPort.yPixelsToOtherViewPort(line[i+1], chartViewPort);
             }
         }
         return newLine;

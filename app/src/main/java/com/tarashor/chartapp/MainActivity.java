@@ -19,7 +19,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 public class MainActivity extends AppCompatActivity {
 
     private TelegramChart telegramChart;
-    private int chartIndex = 0;
+    private int chartIndex = 4;
 
     private List<TelegramFileData> telegramFileData;
     private LinesListView checkBoxList;

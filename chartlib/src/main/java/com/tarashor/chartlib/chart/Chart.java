@@ -65,6 +65,7 @@ public class Chart extends BaseChartView {
         mGridPaint.setColor(Color.rgb(241, 241, 242));
 
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
+        yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
     }
 
 
@@ -72,15 +73,6 @@ public class Chart extends BaseChartView {
     protected void drawView(Canvas canvas) {
         drawYAxis(canvas);
         drawXAxis(canvas);
-    }
-
-
-    @Override
-    protected void onDataChanged() {
-        super.onDataChanged();
-        if (!isEmpty()) {
-            initYAxis();
-        }
     }
 
     @Override
@@ -100,12 +92,9 @@ public class Chart extends BaseChartView {
         super.setNewViewPort(viewPortBuilder.build());
 
         xAxis.viewPortChanged(newViewPort, xmin, xmax);
+        yAxis.viewPortChanged(newViewPort);
     }
 
-
-    private void initYAxis() {
-        yAxis = new YAxis(viewPort, mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
-    }
 
 
     private int getRealTop(int yMax, ChartViewPort newViewPort) {
