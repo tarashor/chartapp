@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import com.tarashor.chartlib.BaseChartView;
 import com.tarashor.chartlib.ChartViewPort;
 import com.tarashor.chartlib.Utils;
+import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -303,4 +304,13 @@ public class Chart extends BaseChartView {
             yAxis.draw(canvas);
     }
 
+    @Override
+    public void restore(DateToIntChartData data, Date xmin, Date xmax, DateToIntDataLine[] dataLines, Date vxmin, Date vxmax) {
+        super.restore(data, xmin, xmax, dataLines, vxmin, vxmax);
+        points = new DateToIntDataPoint[dataLines.length];
+        pointsOut = new Path[dataLines.length];
+        for (int i = 0; i < dataLines.length; i++) {
+            pointsOut[i] = new Path();
+        }
+    }
 }

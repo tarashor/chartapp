@@ -1,6 +1,8 @@
 package com.tarashor.chartlib.data;
 
-public class DataPoint<XType extends Comparable<XType>, YType extends Comparable<YType>> implements Comparable<DataPoint<XType, YType>> {
+import java.io.Serializable;
+
+public class DataPoint<XType extends Comparable<XType>, YType extends Comparable<YType>> implements Comparable<DataPoint<XType, YType>>, Serializable {
     private final XType x;
     private final YType y;
 

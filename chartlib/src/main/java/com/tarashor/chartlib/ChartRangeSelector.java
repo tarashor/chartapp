@@ -29,8 +29,8 @@ public class ChartRangeSelector extends BaseChartView {
     private float mPortTopBottomThicknessPixels;
     private float mMinPortWidthPixels;
 
-    private Date start;
-    private Date end;
+    public Date start;
+    public Date end;
     private float leftPixels;
     private float rightPixels;
 

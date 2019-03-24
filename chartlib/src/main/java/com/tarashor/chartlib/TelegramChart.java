@@ -4,11 +4,12 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 
-import android.graphics.Paint;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.text.TextPaint;
 
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
@@ -77,8 +78,8 @@ public class TelegramChart extends LinearLayout {
         inflate(context, R.layout.telegram_chart_layout,this);
         chart = findViewById(R.id.telegram_chart_view);
         rangeSelector = findViewById(R.id.telegram_range_view);
-        chart.setId(this.getId());
-        rangeSelector.setId(this.getId());
+        //chart.setId(View.generateViewId());
+        //rangeSelector.setId(View.generateViewId());
         rangeSelector.setListener(new ChartRangeSelector.OnRangeChangedListener() {
             @Override
             public void onRangeChanged(ChartRangeSelector v, Date start, Date end) {
@@ -96,6 +97,102 @@ public class TelegramChart extends LinearLayout {
     public void setVisibilityForLine(String lineName, boolean isVisible){
         chart.setVisibilityForLine(lineName, isVisible);
         rangeSelector.setVisibilityForLine(lineName, isVisible);
+    }
+
+
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+        //end
+
+        ss.chartData = this.mData;
+        ss.vxmin = chart.getXRange().first;//viewPort.getXmin();
+        ss.vxmax = chart.getXRange().second;
+        //ss.dataLines = new ArrayList<>();
+        ss.dataLines = chart.dataLines;
+        ss.xmin = chart.xmin;
+        ss.xmax = chart.xmax;
+        ss.start = rangeSelector.start;
+        ss.end = rangeSelector.end;
+
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+
+        SavedState ss = (SavedState)state;
+        this.mData = ss.chartData;
+        chart.restore(mData, ss.xmin, ss.xmax, ss.dataLines, ss.vxmin, ss.vxmax);
+        rangeSelector.start = ss.start;
+        rangeSelector.end = ss.end;
+        rangeSelector.restore(mData, ss.xmin, ss.xmax, ss.dataLines, null, null);
+
+        super.onRestoreInstanceState(ss.getSuperState());
+    }
+
+
+
+    static class SavedState extends BaseSavedState {
+        DateToIntChartData chartData;
+        Date xmin;
+        Date xmax;
+        BaseChartView.DateToIntDataLine[] dataLines;
+        Date vxmin;
+        Date vxmax;
+        Date start;
+        Date end;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.chartData = (DateToIntChartData) in.readBundle().getSerializable("chart_data");
+            this.xmin = (Date) in.readBundle().getSerializable("chart_xmin");
+            this.xmax = (Date) in.readBundle().getSerializable("chart_xmax");
+            this.dataLines = (BaseChartView.DateToIntDataLine[]) in.readBundle().getSerializable("line_data");
+            this.vxmin = (Date) in.readBundle().getSerializable("line_vxmin");
+            this.vxmax = (Date) in.readBundle().getSerializable("line_vxmax");
+            this.start = (Date) in.readBundle().getSerializable("line_start");
+            this.end = (Date) in.readBundle().getSerializable("line_end");
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("chart_data", chartData);
+            bundle.putSerializable("chart_xmin", xmin);
+            bundle.putSerializable("chart_xmax", xmax);
+            bundle.putSerializable("line_data", dataLines);
+            bundle.putSerializable("line_vxmin", vxmin);
+            bundle.putSerializable("line_vxmax", vxmax);
+            bundle.putSerializable("line_start", start);
+            bundle.putSerializable("line_end", end);
+            out.writeBundle(bundle);
+        }
+
+        //required field that makes Parcelables from a Parcel
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
     }
 
 

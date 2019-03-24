@@ -6,10 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -17,7 +14,7 @@ import android.view.View;
 import com.tarashor.chartlib.data.DataPoint;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -30,6 +27,8 @@ public abstract class BaseChartView extends View{
 
     protected Paint mNoDataTextPaint;
     protected Paint mLinesPaint;
+
+
 
     protected DateToIntDataLine[] dataLines;
 
@@ -106,12 +105,39 @@ public abstract class BaseChartView extends View{
         setRangeInternal(xmin, xmax);
     }
 
-    protected void restore(){
+    public Pair<Date, Date> getXRange(){
+        return new Pair<>(viewPort.getXmin(), viewPort.getXmax());
+    }
+
+    public void restore(DateToIntChartData data, Date xmin, Date xmax, DateToIntDataLine[] dataLines, Date vxmin, Date vxmax) {
+        mData = data;
+//        if(dataLines == null){
+//            mLineColors = new int[mData.getLinesCount()];
+//            dataLines = new DateToIntDataLine[mData.getLinesCount()];
+//            for (int i = 0; i < mData.getLinesCount(); i++){
+//                dataLines[i] = createDataLine(mData, i);
+//                mLineColors[i] = mData.getColor(i);
+//            }
+//        }
+//        calculateXMinAndXMax();
+        this.dataLines = new DateToIntDataLine[dataLines.length];
+        for (int i = 0; i < dataLines.length; i++) {
+            this.dataLines[i] = dataLines[i].copy();
+        }
+
         mLineColors = new int[mData.getLinesCount()];
-        for (int i = 0; i < mData.getLinesCount(); i++){
+        for (int i = 0; i < mData.getLinesCount(); i++) {
             mLineColors[i] = mData.getColor(i);
         }
-        onDataChanged();
+        this.xmin = xmin;
+        this.xmax = xmax;
+
+
+        if (vxmin == null || vxmax == null) {
+            setRangeInternal(this.xmin, this.xmax);
+        } else {
+            setRangeInternal(vxmin, vxmax);
+        }
         invalidate();
     }
 
@@ -336,11 +362,20 @@ public abstract class BaseChartView extends View{
     }
 
 
-    protected static class DateToIntDataLine{
+    protected static class DateToIntDataLine implements Serializable {
         public String id;
-        protected DateToIntDataPoint[] points;
+        public DateToIntDataPoint[] points;
         public boolean isVisible = true;
-        protected int yMax;
+        public int yMax;
+
+        public DateToIntDataLine copy(){
+            DateToIntDataLine line = new DateToIntDataLine();
+            line.id = id;
+            line.yMax = yMax;
+            line.isVisible = isVisible;
+            line.points = Arrays.copyOf(points, points.length);
+            return line;
+        }
 
         public int getYMaxInRange(Date start, Date end) {
             int index = Arrays.binarySearch(points, new DateToIntDataPoint(start, 0));
@@ -378,76 +413,10 @@ public abstract class BaseChartView extends View{
         }
     }
 
-    public static class DateToIntDataPoint extends DataPoint<Date, Integer> {
+    public static class DateToIntDataPoint extends DataPoint<Date, Integer> implements Serializable {
         public DateToIntDataPoint(Date x, Integer y) {
             super(x, y);
         }
     }
 
-    @Nullable
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-
-        SavedState ss = new SavedState(superState);
-        //end
-
-        ss.chartData = this.mData;
-        ss.dataLines = new ArrayList<>();
-        ss.dataLines.addAll(Arrays.asList(dataLines));
-
-        return ss;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if(!(state instanceof SavedState)) {
-            super.onRestoreInstanceState(state);
-            return;
-        }
-
-
-        SavedState ss = (SavedState)state;
-        this.mData = ss.chartData;
-        DateToIntDataLine[] lines = new DateToIntDataLine[ss.dataLines.size()];
-        this.dataLines = ss.dataLines.toArray(lines);
-        restore();
-        super.onRestoreInstanceState(ss.getSuperState());
-    }
-
-    static class SavedState extends BaseSavedState {
-        DateToIntChartData chartData;
-        ArrayList<DateToIntDataLine> dataLines;
-
-        SavedState(Parcelable superState) {
-            super(superState);
-        }
-
-        private SavedState(Parcel in) {
-            super(in);
-            this.chartData = (DateToIntChartData) in.readBundle().getSerializable("chart_data");
-            this.dataLines = (ArrayList<DateToIntDataLine>) in.readBundle().getSerializable("line_data");
-        }
-
-        @Override
-        public void writeToParcel(Parcel out, int flags) {
-            super.writeToParcel(out, flags);
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("chart_data", chartData);
-            bundle.putSerializable("line_data", dataLines);
-            out.writeBundle(bundle);
-        }
-
-        //required field that makes Parcelables from a Parcel
-        public static final Parcelable.Creator<SavedState> CREATOR =
-                new Parcelable.Creator<SavedState>() {
-                    public SavedState createFromParcel(Parcel in) {
-                        return new SavedState(in);
-                    }
-
-                    public SavedState[] newArray(int size) {
-                        return new SavedState[size];
-                    }
-                };
-    }
 }
