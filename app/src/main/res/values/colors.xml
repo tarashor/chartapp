@@ -9,4 +9,6 @@
 
     <color name="gridColor">#F1F1F2</color>
     <color name="marksTextColor">#96A2AA</color>
+    <color name="pointerLineColor">#E5EBEF</color>
+
 </resources>

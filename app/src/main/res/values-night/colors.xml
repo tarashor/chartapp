@@ -7,4 +7,6 @@
 
     <color name="gridColor">#161F2B</color>
     <color name="marksTextColor">#506372</color>
+    <color name="pointerLineColor">#131C26</color>
+
 </resources>
