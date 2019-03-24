@@ -21,6 +21,71 @@
             android:layout_marginTop="16dp"
             android:textSize="16sp"/>
 
+        <com.tarashor.chartlib.TelegramChart
+            android:id="@+id/chart1"
+            android:layout_width="match_parent"
+            android:layout_height="450dp"
+            android:layout_marginTop="8dp" />
+
+        <com.tarashor.chartapp.view.LinesListView
+            android:id="@+id/checkbox_list1"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.tarashor.chartlib.TelegramChart
+            android:id="@+id/chart2"
+            android:layout_width="match_parent"
+            android:layout_height="450dp"
+            android:layout_marginTop="8dp" />
+
+        <com.tarashor.chartapp.view.LinesListView
+            android:id="@+id/checkbox_list2"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.tarashor.chartlib.TelegramChart
+            android:id="@+id/chart3"
+            android:layout_width="match_parent"
+            android:layout_height="450dp"
+            android:layout_marginTop="8dp" />
+
+        <com.tarashor.chartapp.view.LinesListView
+            android:id="@+id/checkbox_list3"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.tarashor.chartlib.TelegramChart
+            android:id="@+id/chart4"
+            android:layout_width="match_parent"
+            android:layout_height="450dp"
+            android:layout_marginTop="8dp" />
+
+        <com.tarashor.chartapp.view.LinesListView
+            android:id="@+id/checkbox_list4"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.tarashor.chartlib.TelegramChart
+            android:id="@+id/chart5"
+            android:layout_width="match_parent"
+            android:layout_height="450dp"
+            android:layout_marginTop="8dp" />
+
+        <com.tarashor.chartapp.view.LinesListView
+            android:id="@+id/checkbox_list5"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

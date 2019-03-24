@@ -75,6 +75,8 @@ public class TelegramChart extends LinearLayout {
         inflate(context, R.layout.telegram_chart_layout,this);
         chart = findViewById(R.id.telegram_chart_view);
         rangeSelector = findViewById(R.id.telegram_range_view);
+        chart.setId(this.getId());
+        rangeSelector.setId(this.getId());
         rangeSelector.setListener(new ChartRangeSelector.OnRangeChangedListener() {
             @Override
             public void onRangeChanged(ChartRangeSelector v, Date start, Date end) {
