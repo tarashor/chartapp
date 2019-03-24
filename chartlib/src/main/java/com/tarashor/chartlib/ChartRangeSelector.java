@@ -118,10 +118,10 @@ public class ChartRangeSelector extends BaseChartView {
     private void moveBy(float dx, DragMode dragMode) {
         switch (dragMode){
             case LEFT:
-                setLeftPixels(leftPixels + dx);
+                setLeftPixels(leftPixels + dx, true);
                 break;
             case RIGHT:
-                setRightPixels(rightPixels + dx);
+                setRightPixels(rightPixels + dx, true);
                 break;
             case WHOLE:
                 float dist = rightPixels - leftPixels;
@@ -210,8 +210,8 @@ public class ChartRangeSelector extends BaseChartView {
     }
 
     @Override
-    protected void onDataChanged() {
-        super.onDataChanged();
+    protected void onDataChanged(boolean restore) {
+        super.onDataChanged(restore);
         if (!isEmpty()) {
             start = xmin;
             end = xmax;
@@ -250,6 +250,11 @@ public class ChartRangeSelector extends BaseChartView {
         return end;
     }
 
+    public void setStartAndEnd(Date start, Date end){
+        setLeftAndRight(viewPort.xValueToPixels(start), viewPort.xValueToPixels(end));
+        invalidate();
+    }
+
     public void setStart(Date start) {
         setStartInternal(start);
         invalidate();
@@ -262,17 +267,27 @@ public class ChartRangeSelector extends BaseChartView {
 
     private void setStartInternal(Date start) {
         float newLeftPixels = viewPort.xValueToPixels(start);
-        setLeftPixels(newLeftPixels);
+        setLeftPixels(newLeftPixels, false);
     }
 
     private void setEndInternal(Date end) {
         float newRightPixels = viewPort.xValueToPixels(end);
-        setRightPixels(newRightPixels);
+        setRightPixels(newRightPixels, false);
     }
 
 
+    @Override
+    protected void restore() {
+        super.restore();
+        viewPortBuilder.setXmax(end);
+        viewPortBuilder.setXmin(start);
+        //viewPortBuilder.build();
+        setStart(rangeXMin);
+        setEnd(rangeXMax);
+        onRangeChanged();
+    }
 
-    private void setLeftPixels(float newLeftPixels) {
+    private void setLeftPixels(float newLeftPixels, boolean needToNotify) {
         if (newLeftPixels < 0) newLeftPixels = 0;
         else {
             float rightEdge = rightPixels - mPortLeftRightThicknessPixels - mMinPortWidthPixels;
@@ -283,11 +298,11 @@ public class ChartRangeSelector extends BaseChartView {
             leftPixels = newLeftPixels;
             this.start = viewPort.xPixelsToValue(leftPixels);
             updateRects();
-            onRangeChanged();
+            if(needToNotify) onRangeChanged();
         }
     }
 
-    private void setRightPixels(float newRightPixels) {
+    private void setRightPixels(float newRightPixels, boolean needToNotify) {
         if (newRightPixels > viewPort.getWidth()) newRightPixels = viewPort.getWidth();
         else {
             float leftEdge = leftPixels + mPortLeftRightThicknessPixels + mMinPortWidthPixels;
@@ -297,9 +312,34 @@ public class ChartRangeSelector extends BaseChartView {
             rightPixels = newRightPixels;
             this.end = viewPort.xPixelsToValue(rightPixels);
             updateRects();
-            onRangeChanged();
+            if(needToNotify) onRangeChanged();
         }
 
+    }
+
+    private void setLeftAndRight(Date start, Date end){
+        float newLeftPixels = viewPort.xValueToPixels(start);
+        float newRightPixels = viewPort.xValueToPixels(end);
+        if (newLeftPixels < 0) newLeftPixels = 0;
+        else {
+            float rightEdge = rightPixels - mPortLeftRightThicknessPixels - mMinPortWidthPixels;
+            if (newLeftPixels > rightEdge) newLeftPixels = rightEdge;
+        }
+
+        if (newRightPixels > viewPort.getWidth()) newRightPixels = viewPort.getWidth();
+        else {
+            float leftEdge = leftPixels + mPortLeftRightThicknessPixels + mMinPortWidthPixels;
+            if (newRightPixels < leftEdge) newRightPixels = leftEdge;
+        }
+
+        if (rightPixels != newRightPixels || leftPixels != newLeftPixels) {
+            rightPixels = newRightPixels;
+            this.end = viewPort.xPixelsToValue(rightPixels);
+            leftPixels = newLeftPixels;
+            this.start = viewPort.xPixelsToValue(leftPixels);
+            updateRects();
+            onRangeChanged();
+        }
     }
 
     private void setLeftAndRight(float newLeftPixels, float newRightPixels) {
@@ -318,11 +358,12 @@ public class ChartRangeSelector extends BaseChartView {
             updateRects();
             onRangeChanged();
         }
-
     }
 
     private void onRangeChanged(){
         if (listener != null){
+            rangeXMin = start;
+            rangeXMax = end;
             listener.onRangeChanged(this, start, end);
         }
     }

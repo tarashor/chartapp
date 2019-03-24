@@ -46,6 +46,8 @@ public abstract class BaseChartView extends View{
     protected Date xmax;
     protected int ymin;
     protected int ymax;
+    protected Date rangeXMin;
+    protected Date rangeXMax;
 
     protected ChartViewPortBuilder viewPortBuilder;
     private Bitmap bitmap;
@@ -89,12 +91,12 @@ public abstract class BaseChartView extends View{
     public void setData(DateToIntChartData data) {
         mData = data;
 
-        onDataChanged();
+        onDataChanged(false);
 
         invalidate();
     }
 
-    protected void onDataChanged(){
+    protected void onDataChanged(boolean restore){
         if(dataLines == null){
             mLineColors = new int[mData.getLinesCount()];
             dataLines = new DateToIntDataLine[mData.getLinesCount()];
@@ -105,7 +107,11 @@ public abstract class BaseChartView extends View{
         }
         calculateXMinAndXMax();
 
-        setRangeInternal(xmin, xmax);
+        if(!restore) {
+            setRangeInternal(xmin, xmax);
+        } else {
+            setRangeInternal(rangeXMin, rangeXMax);
+        }
     }
 
     protected void restore(){
@@ -113,7 +119,7 @@ public abstract class BaseChartView extends View{
         for (int i = 0; i < mData.getLinesCount(); i++){
             mLineColors[i] = mData.getColor(i);
         }
-        onDataChanged();
+        onDataChanged(true);
         invalidate();
     }
 
@@ -124,6 +130,8 @@ public abstract class BaseChartView extends View{
     }
 
     private void setRangeInternal(Date start, Date end) {
+        rangeXMin = start;
+        rangeXMax = end;
         setNewXForViewPort(start, end);
 
         int yMax = getYMaxForRange(start, end);
@@ -329,6 +337,7 @@ public abstract class BaseChartView extends View{
     }
 
     private int findDataLineIndexByName(String lineName) {
+        if(lines == null) return -1;
         for (int i = 0; i < dataLines.length; i++){
             if (dataLines[i].id.equals(lineName)) {
                 return i;
@@ -397,6 +406,8 @@ public abstract class BaseChartView extends View{
         ss.chartData = this.mData;
         ss.dataLines = new ArrayList<>();
         ss.dataLines.addAll(Arrays.asList(dataLines));
+        ss.startDate = rangeXMin.getTime();
+        ss.endDate = rangeXMax.getTime();
 
         return ss;
     }
@@ -413,22 +424,28 @@ public abstract class BaseChartView extends View{
         this.mData = ss.chartData;
         DateToIntDataLine[] lines = new DateToIntDataLine[ss.dataLines.size()];
         this.dataLines = ss.dataLines.toArray(lines);
+        this.rangeXMin = new Date(ss.startDate);
+        this.rangeXMax = new Date(ss.endDate);
         restore();
         super.onRestoreInstanceState(ss.getSuperState());
     }
 
-    static class SavedState extends BaseSavedState {
+    protected static class SavedState extends BaseSavedState {
         DateToIntChartData chartData;
         ArrayList<DateToIntDataLine> dataLines;
+        long startDate;
+        long endDate;
 
         SavedState(Parcelable superState) {
             super(superState);
         }
 
-        private SavedState(Parcel in) {
+        protected SavedState(Parcel in) {
             super(in);
             this.chartData = (DateToIntChartData) in.readBundle().getSerializable("chart_data");
             this.dataLines = (ArrayList<DateToIntDataLine>) in.readBundle().getSerializable("line_data");
+            this.startDate = in.readBundle().getLong("start_date");
+            this.endDate = in.readBundle().getLong("end_date");
         }
 
         @Override
@@ -437,6 +454,8 @@ public abstract class BaseChartView extends View{
             Bundle bundle = new Bundle();
             bundle.putSerializable("chart_data", chartData);
             bundle.putSerializable("line_data", dataLines);
+            bundle.putLong("start_date", startDate);
+            bundle.putSerializable("end_date", endDate);
             out.writeBundle(bundle);
         }
 

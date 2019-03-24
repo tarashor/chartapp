@@ -167,8 +167,8 @@ public class Chart extends BaseChartView {
     }
 
     @Override
-    protected void onDataChanged() {
-        super.onDataChanged();
+    protected void onDataChanged(boolean restore) {
+        super.onDataChanged(restore);
         points = new DateToIntDataPoint[dataLines.length];
         pointsOut = new Path[dataLines.length];
         for (int i = 0; i < dataLines.length; i++) {
