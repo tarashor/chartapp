@@ -14,6 +14,7 @@ import com.tarashor.chartlib.data.DataPoint;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -286,9 +287,7 @@ public abstract class BaseChartView extends View{
         }
     }
 
-    protected void drawUnderView(Canvas canvas){
-
-    }
+    protected void drawUnderView(Canvas canvas){}
 
     protected void drawOverView(Canvas canvas){}
 
@@ -303,13 +302,8 @@ public abstract class BaseChartView extends View{
                     dataLine.isVisible = isVisible;
                     int dataLineYMax = getYMaxForRange(viewPort.getXmin(), viewPort.getXmax());
                     setNewYmaxForViewPort(dataLineYMax);
+
                     updateBitmap();
-//                    if (dataLineYMax < viewPort.getYmax()) {
-//                        lines[index] = convertPointsToLine(dataLine.points);
-//                    } else {
-//                        viewPort = viewPortBuilder.setYmax(dataLineYMax).build();
-//                        initAllLinesToDraw();
-//                    }
                     invalidate();
                 }
             }
@@ -326,11 +320,11 @@ public abstract class BaseChartView extends View{
     }
 
 
-    static class DateToIntDataLine{
-        String id;
-        DateToIntDataPoint[] points;
-        boolean isVisible = true;
-        int yMax;
+    protected static class DateToIntDataLine{
+        protected String id;
+        protected DateToIntDataPoint[] points;
+        public boolean isVisible = true;
+        protected int yMax;
 
         public int getYMaxInRange(Date start, Date end) {
             int index = Arrays.binarySearch(points, new DateToIntDataPoint(start, 0));
@@ -345,9 +339,30 @@ public abstract class BaseChartView extends View{
             }
             return ymax;
         }
+
+
+        public DateToIntDataPoint getClosestPoint(Date date) {
+            int index = Arrays.binarySearch(points, new DateToIntDataPoint(date, 0));
+            if (index < 0) index = -index - 1;
+
+            if (index == 0) return points[index];
+            if (index == points.length) return points[index - 1];
+
+            Date after = points[index].getX();
+            Date before = points[index - 1].getX();
+            long diffAfter = after.getTime() - date.getTime();
+            long diffBefore = date.getTime() - before.getTime();
+            if (diffAfter < diffBefore) return points[index];
+//
+//            Calendar calendar = Calendar.getInstance();
+//            calendar.setTimeInMillis((before.getTime() + after.getTime())/2);
+//            Date midde = calendar.getTime();
+//            if (date.after(midde)) return points[index];
+            return points[index-1];
+        }
     }
 
-    static class DateToIntDataPoint extends DataPoint<Date, Integer> {
+    protected static class DateToIntDataPoint extends DataPoint<Date, Integer> {
         public DateToIntDataPoint(Date x, Integer y) {
             super(x, y);
         }

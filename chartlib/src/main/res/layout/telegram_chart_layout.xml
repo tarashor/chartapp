@@ -12,7 +12,7 @@
 
     <com.tarashor.chartlib.ChartRangeSelector
         android:id="@+id/telegram_range_view"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="12dp"
         android:layout_width="match_parent"
-        android:layout_height="38dp"/>
+        android:layout_height="48dp"/>
 </LinearLayout>

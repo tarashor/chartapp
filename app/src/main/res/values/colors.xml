@@ -6,4 +6,9 @@
     <color name="windowBackground">#FFFFFF</color>
     <color name="chart_title_color">#8CC3F7</color>
     <color name="chart_lines_name_color">#000000</color>
+
+    <color name="gridColor">#F1F1F2</color>
+    <color name="marksTextColor">#96A2AA</color>
+    <color name="pointerLineColor">#E5EBEF</color>
+
 </resources>
