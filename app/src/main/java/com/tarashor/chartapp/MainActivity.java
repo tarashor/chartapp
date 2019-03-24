@@ -15,10 +15,13 @@ import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.widget.NestedScrollView;
 
 public class MainActivity extends AppCompatActivity {
 
     private List<TelegramFileData> telegramFileData;
+
+    private NestedScrollView nestedScrollView;
 
     private TelegramChart chart1;
     private LinesListView linesListView1;
@@ -35,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ChartJsonParser parser = new ChartJsonParser();
-        telegramFileData = parser.parseColumns(this);
 
         chart1 = findViewById(R.id.chart1);
         linesListView1 = findViewById(R.id.checkbox_list1);
@@ -86,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         if(savedInstanceState == null) {
+            ChartJsonParser parser = new ChartJsonParser();
+            telegramFileData = parser.parseColumns(this);
             setData();
         }
     }
@@ -131,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleTheme() {
         getDelegate().setLocalNightMode(isNightMode() ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);
-        getDelegate().applyDayNight();
     }
 
     private boolean isNightMode(){
