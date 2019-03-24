@@ -6,6 +6,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
@@ -18,9 +21,6 @@ import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.HashMap;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.AppCompatCheckBox;
 
 public class LinesListView  extends LinearLayout {
     private final static String DATA_KEY = "data";

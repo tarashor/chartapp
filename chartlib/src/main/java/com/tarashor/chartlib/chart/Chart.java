@@ -5,8 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.graphics.Region;
+import android.os.CountDownTimer;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
@@ -15,20 +15,14 @@ import com.tarashor.chartlib.ChartViewPort;
 import com.tarashor.chartlib.Utils;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-import androidx.core.view.GestureDetectorCompat;
 
 
 public class Chart extends BaseChartView {
-    protected final static int AXIS_TEXT_SIZE_DP = 16;
+    protected final static int AXIS_TEXT_SIZE_DP = 12;
     protected final static int AXIS_TEXT_AREA_HEIGHT_DP = AXIS_TEXT_SIZE_DP + 4;
-
-    private int mGridColor;
-    private int mMarksTextColor;
-    private int mPointerLineColor;
-    private int mPopupTextHeaderColor;
-    private int mPopupBackground;
-    private int mPopupBorderColor;
 
     protected Paint mYTextPaint;
     protected Paint mXTextPaint;
@@ -41,9 +35,15 @@ public class Chart extends BaseChartView {
     private XAxis xAxis;
 
     private float mTopLineOffsetPixels;
-    private GestureDetectorCompat mDetector;
+
     private float mPointerCircleRadius;
     private Paint mPointerBorderPaint;
+
+    private Paint mPopupBorderPaint;
+    private Paint mPopupBackgroundPaint;
+    private Paint mPopupHeaderTextPaint;
+    private Paint mValuesTextPaint;
+    private Paint mDescrTextPaint;
 
 
     public Chart(Context context) {
@@ -92,13 +92,47 @@ public class Chart extends BaseChartView {
         mPointerBorderPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPointerBorderPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 3));
 
+        mPopupBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPopupBorderPaint.setStyle(Paint.Style.STROKE);
+        mPopupBorderPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
+
+        mPopupBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPopupBackgroundPaint.setStyle(Paint.Style.FILL);
+
+        mPopupHeaderTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPopupHeaderTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 18));
+        mPopupHeaderTextPaint.setTextAlign(Paint.Align.LEFT);
+        mPopupHeaderTextPaint.setFakeBoldText(true);
+
+        mValuesTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mValuesTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 22));
+        mValuesTextPaint.setTextAlign(Paint.Align.LEFT);
+        mValuesTextPaint.setFakeBoldText(true);
+
+        mDescrTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mDescrTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 16));
+        mDescrTextPaint.setTextAlign(Paint.Align.LEFT);
+
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
         yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
 
     }
 
+    private float currentPointerToDraw;
     private float currentPointer;
-    private float previousPointer;
+    private CountDownTimer timer = new CountDownTimer(100, 100) {
+
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+        }
+
+        @Override
+        public void onFinish() {
+
+        }
+    };
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -106,15 +140,15 @@ public class Chart extends BaseChartView {
         float x = event.getX();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                getParent().requestDisallowInterceptTouchEvent(true);
                 setPressed(true);
-                showPointerAt(x);
+                showPointerAt(currentPointer);
                 invalidate();
                 return true;
             case MotionEvent.ACTION_MOVE:
-                getParent().requestDisallowInterceptTouchEvent(true);
                 showPointerAt(x);
                 invalidate();
-                return false;
+                return true;
             case MotionEvent.ACTION_UP:
                 setPressed(false);
                 getParent().requestDisallowInterceptTouchEvent(false);
@@ -130,13 +164,15 @@ public class Chart extends BaseChartView {
 
     }
 
-    private RectF popup;
+    private PointerPopup popup;
     private DateToIntDataPoint[] points;
     private Path[] pointsOut;
 
     private void showPointerAt(float x) {
         Date date = viewPort.xPixelsToValue(x);
         Date closestDate = null;
+        Map<String, DateToIntDataPoint> popupValues = new HashMap<>();
+        Map<String, Integer> popupColors = new HashMap<>();
         for(int i =0; i < dataLines.length; i++){
             pointsOut[i].reset();
             if (dataLines[i].isVisible){
@@ -145,12 +181,19 @@ public class Chart extends BaseChartView {
                         viewPort.yValueToPixels(points[i].getY()),
                         mPointerCircleRadius - 1, Path.Direction.CCW);
                 closestDate = points[i].getX();
+                popupValues.put(dataLines[i].id, points[i]);
+                popupColors.put(dataLines[i].id, mLineColors[i]);
             } else {
                 points[i] = null;
             }
         }
 
-        currentPointer = viewPort.xValueToPixels(closestDate);
+        currentPointerToDraw = viewPort.xValueToPixels(closestDate);
+
+        popup = new PointerPopup(getContext(), currentPointerToDraw, popupValues, viewPort, popupColors,
+        mPopupBackgroundPaint, mPopupBorderPaint, mPopupHeaderTextPaint, mValuesTextPaint, mDescrTextPaint);
+
+
     }
 
     public void setColorsForPaints(
@@ -164,6 +207,10 @@ public class Chart extends BaseChartView {
         mXTextPaint.setColor(marksTextColor);
         mGridPaint.setColor(gridColor);
         mPointerLinePaint.setColor(pointerLineColor);
+
+        mPopupBorderPaint.setColor(popupBorderColor);
+        mPopupBackgroundPaint.setColor(popupBackground);
+        mPopupHeaderTextPaint.setColor(popupTextHeaderColor);
     }
 
     @Override
@@ -179,6 +226,7 @@ public class Chart extends BaseChartView {
     @Override
     protected void drawUnderView(Canvas canvas) {
         if (isPressed()) {
+            canvas.save();
             for (int i = 0; i < pointsOut.length; i++) {
                 canvas.clipPath(pointsOut[i], Region.Op.DIFFERENCE);
             }
@@ -191,8 +239,8 @@ public class Chart extends BaseChartView {
     @Override
     protected void drawOverView(Canvas canvas) {
         if (isPressed()) {
-            canvas.drawLine(currentPointer, viewPort.getHeight() - viewPort.getBottomOffsetPixels(),
-                    currentPointer, viewPort.getTopOffsetPixels(), mPointerLinePaint);
+            canvas.drawLine(currentPointerToDraw, viewPort.getHeight() - viewPort.getBottomOffsetPixels(),
+                    currentPointerToDraw, viewPort.getTopOffsetPixels(), mPointerLinePaint);
 
             for (int i = 0; i < points.length; i++) {
                 if (points[i] != null) {
@@ -201,9 +249,10 @@ public class Chart extends BaseChartView {
                     float y = viewPort.yValueToPixels(points[i].getY());
                     canvas.drawCircle(x, y, mPointerCircleRadius, mPointerBorderPaint);
                 }
-
             }
 
+            canvas.restore();
+            popup.draw(canvas);
         }
     }
 

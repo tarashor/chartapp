@@ -9,6 +9,7 @@ import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -18,11 +19,8 @@ import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 
-import androidx.annotation.Nullable;
 
 
 public abstract class BaseChartView extends View{
@@ -339,7 +337,7 @@ public abstract class BaseChartView extends View{
 
 
     protected static class DateToIntDataLine{
-        protected String id;
+        public String id;
         protected DateToIntDataPoint[] points;
         public boolean isVisible = true;
         protected int yMax;
@@ -380,7 +378,7 @@ public abstract class BaseChartView extends View{
         }
     }
 
-    protected static class DateToIntDataPoint extends DataPoint<Date, Integer> {
+    public static class DateToIntDataPoint extends DataPoint<Date, Integer> {
         public DateToIntDataPoint(Date x, Integer y) {
             super(x, y);
         }

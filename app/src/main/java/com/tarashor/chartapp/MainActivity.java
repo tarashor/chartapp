@@ -2,6 +2,9 @@ package com.tarashor.chartapp;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.widget.NestedScrollView;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -12,10 +15,6 @@ import com.tarashor.chartlib.TelegramChart;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.List;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.widget.NestedScrollView;
 
 public class MainActivity extends AppCompatActivity {
 
