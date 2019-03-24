@@ -58,7 +58,7 @@ public class ChartRangeSelector extends BaseChartView {
     protected void init() {
         super.init();
 
-        mPortLeftRightThicknessPixels = Utils.convertDpToPixel(getContext(), 30);
+        mPortLeftRightThicknessPixels = Utils.convertDpToPixel(getContext(), 15);
         mPortTopBottomThicknessPixels = Utils.convertDpToPixel(getContext(), 4);
         mMinPortWidthPixels = 2*mPortLeftRightThicknessPixels;
 
@@ -82,10 +82,10 @@ public class ChartRangeSelector extends BaseChartView {
                 float x = event.getX();
                 float y = event.getY();
                 getParent().requestDisallowInterceptTouchEvent(true);
-                if (leftRect.left <= x && x <= leftRect.right) {
+                if (leftRect.left - mMinPortWidthPixels/2 <= x && x <= leftRect.right + mMinPortWidthPixels/2) {
                     mDragMode = DragMode.LEFT;
                     return true;
-                } else if (rightRect.left <= x && x <= rightRect.right) {
+                } else if (rightRect.left - mMinPortWidthPixels/2 <= x && x <= rightRect.right + mMinPortWidthPixels/2) {
                     mDragMode = DragMode.RIGHT;
                     return true;
                 } else if (leftRect.right <= x && x <= rightRect.left) {
