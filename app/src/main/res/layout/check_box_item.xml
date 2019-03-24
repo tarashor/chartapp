@@ -8,7 +8,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical">
 
-    <androidx.appcompat.widget.AppCompatCheckBox
+    <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/check_box"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

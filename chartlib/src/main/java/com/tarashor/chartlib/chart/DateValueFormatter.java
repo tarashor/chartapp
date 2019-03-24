@@ -14,5 +14,10 @@ public class DateValueFormatter implements IValueFormatter<Date> {
         return sdf.format(v);
     }
 
+
+    public static String formatHeader(Date v) {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM d", Locale.ENGLISH);
+        return sdf.format(v);
+    }
 }
 
