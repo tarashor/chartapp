@@ -4,11 +4,9 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
 
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
 import com.tarashor.chartapp.models.TelegramFileData;
-import com.tarashor.chartapp.view.ChartView;
 import com.tarashor.chartapp.view.LinesListView;
 import com.tarashor.chartlib.TelegramChart;
 import com.tarashor.chartlib.data.DateToIntChartData;
@@ -21,7 +19,17 @@ import androidx.appcompat.app.AppCompatDelegate;
 public class MainActivity extends AppCompatActivity {
 
     private List<TelegramFileData> telegramFileData;
-    private LinearLayout chartContainer;
+
+    private TelegramChart chart1;
+    private LinesListView linesListView1;
+    private TelegramChart chart2;
+    private LinesListView linesListView2;
+    private TelegramChart chart3;
+    private LinesListView linesListView3;
+    private TelegramChart chart4;
+    private LinesListView linesListView4;
+    private TelegramChart chart5;
+    private LinesListView linesListView5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,19 +37,79 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ChartJsonParser parser = new ChartJsonParser();
         telegramFileData = parser.parseColumns(this);
-        chartContainer = findViewById(R.id.chart_container);
 
-        setData();
+        chart1 = findViewById(R.id.chart1);
+        linesListView1 = findViewById(R.id.checkbox_list1);
+        chart2 = findViewById(R.id.chart2);
+        linesListView2 = findViewById(R.id.checkbox_list2);
+        chart3 = findViewById(R.id.chart3);
+        linesListView3 = findViewById(R.id.checkbox_list3);
+        chart4 = findViewById(R.id.chart4);
+        linesListView4 = findViewById(R.id.checkbox_list4);
+        chart5 = findViewById(R.id.chart5);
+        linesListView5 = findViewById(R.id.checkbox_list5);
+
+        linesListView1.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                chart1.setVisibilityForLine(name, checked);
+            }
+        });
+
+        linesListView2.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                chart2.setVisibilityForLine(name, checked);
+            }
+        });
+
+        linesListView3.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                chart3.setVisibilityForLine(name, checked);
+            }
+        });
+
+        linesListView4.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                chart4.setVisibilityForLine(name, checked);
+            }
+        });
+
+        linesListView5.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+            @Override
+            public void onChange(boolean checked, String name) {
+                chart5.setVisibilityForLine(name, checked);
+            }
+        });
+
+
+        if(savedInstanceState == null) {
+            setData();
+        }
     }
 
 
     private void setData() {
         ChartToChartDataConverter chartToChartDataConverter = new ChartToChartDataConverter();
-        for(TelegramFileData fileData : telegramFileData){
-            ChartView chartView = new ChartView(this);
-            chartView.setData(chartToChartDataConverter.convert(fileData));
-            chartContainer.addView(chartView);
-        }
+        DateToIntChartData chartData1 = chartToChartDataConverter.convert(telegramFileData.get(0));
+        DateToIntChartData chartData2 = chartToChartDataConverter.convert(telegramFileData.get(1));
+        DateToIntChartData chartData3 = chartToChartDataConverter.convert(telegramFileData.get(2));
+        DateToIntChartData chartData4 = chartToChartDataConverter.convert(telegramFileData.get(3));
+        DateToIntChartData chartData5 = chartToChartDataConverter.convert(telegramFileData.get(4));
+
+        chart1.setData(chartData1);
+        chart2.setData(chartData2);
+        chart3.setData(chartData3);
+        chart4.setData(chartData4);
+        chart5.setData(chartData5);
+
+        linesListView1.setData(chartData1);
+        linesListView2.setData(chartData2);
+        linesListView3.setData(chartData3);
+        linesListView4.setData(chartData4);
+        linesListView5.setData(chartData5);
     }
 
 

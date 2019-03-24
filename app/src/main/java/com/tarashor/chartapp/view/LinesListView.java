@@ -3,6 +3,8 @@ package com.tarashor.chartapp.view;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -14,12 +16,16 @@ import android.widget.TextView;
 import com.tarashor.chartapp.R;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
+import java.util.HashMap;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatCheckBox;
 
 public class LinesListView  extends LinearLayout {
-    private SparseArray<LineState> lines = new SparseArray<>();
+    private final static String DATA_KEY = "data";
+
+    private HashMap<Integer, LineState> lines = new HashMap<>();
     private SparseArray<CheckViewHolder> views = new SparseArray<>();
     private CheckedChange onCheckedChangeListener;
 
@@ -60,7 +66,7 @@ public class LinesListView  extends LinearLayout {
         views.clear();
         removeAllViews();
         for (int i = 0; i < lines.size(); i++) {
-            int key = lines.keyAt(i);
+            int key = i;
             LineState lineState = lines.get(key);
             inflate(getContext(), R.layout.check_box_item, this);
             //addView(itemView);
@@ -68,9 +74,18 @@ public class LinesListView  extends LinearLayout {
             checkViewHolder.setLineState(lineState);
             views.put(key, checkViewHolder);
         }
+    }
 
-
-
+    private void restoreData(){
+        for (int i = 0; i < lines.size(); i++) {
+            int key = i;
+            LineState lineState = lines.get(key);
+            inflate(getContext(), R.layout.check_box_item, this);
+            //addView(itemView);
+            CheckViewHolder checkViewHolder = new CheckViewHolder(getChildAt(i), key);
+            checkViewHolder.setLineState(lineState);
+            views.put(key, checkViewHolder);
+        }
     }
 
     private class CheckViewHolder {
@@ -82,6 +97,7 @@ public class LinesListView  extends LinearLayout {
         public CheckViewHolder(View itemView, final int key) {
             checkBox = itemView.findViewById(R.id.check_box);
             textView = itemView.findViewById(R.id.check_box_name);
+            checkBox.setId(checkBox.getId() + LinesListView.this.getId() + key);
             this.key = key;
 
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -175,6 +191,62 @@ public class LinesListView  extends LinearLayout {
     @Nullable
     @Override
     protected Parcelable onSaveInstanceState() {
-        return super.onSaveInstanceState();
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+        //end
+
+        ss.lines = this.lines;
+
+        return ss;
     }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+
+        SavedState ss = (SavedState)state;
+        this.lines = ss.lines;
+        restoreData();
+        super.onRestoreInstanceState(ss.getSuperState());
+        //end
+    }
+
+    static class SavedState extends BaseSavedState {
+        HashMap<Integer, LineState> lines;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.lines = (HashMap<Integer, LineState>) in.readBundle().getSerializable(DATA_KEY);
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(DATA_KEY, this.lines);
+            out.writeBundle(bundle);
+        }
+
+        //required field that makes Parcelables from a Parcel
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+    }
+
 }

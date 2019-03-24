@@ -6,6 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -13,9 +16,13 @@ import android.view.View;
 import com.tarashor.chartlib.data.DataPoint;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+
+import androidx.annotation.Nullable;
 
 
 public abstract class BaseChartView extends View{
@@ -88,15 +95,26 @@ public abstract class BaseChartView extends View{
     }
 
     protected void onDataChanged(){
-        dataLines = new DateToIntDataLine[mData.getLinesCount()];
-        mLineColors = new int[mData.getLinesCount()];
-        for (int i = 0; i < mData.getLinesCount(); i++){
-            dataLines[i] = createDataLine(mData, i);
-            mLineColors[i] = mData.getColor(i);
+        if(dataLines == null){
+            mLineColors = new int[mData.getLinesCount()];
+            dataLines = new DateToIntDataLine[mData.getLinesCount()];
+            for (int i = 0; i < mData.getLinesCount(); i++){
+                dataLines[i] = createDataLine(mData, i);
+                mLineColors[i] = mData.getColor(i);
+            }
         }
         calculateXMinAndXMax();
 
         setRangeInternal(xmin, xmax);
+    }
+
+    protected void restore(){
+        mLineColors = new int[mData.getLinesCount()];
+        for (int i = 0; i < mData.getLinesCount(); i++){
+            mLineColors[i] = mData.getColor(i);
+        }
+        onDataChanged();
+        invalidate();
     }
 
     public void setRange(Date start, Date end) {
@@ -368,4 +386,70 @@ public abstract class BaseChartView extends View{
         }
     }
 
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+        //end
+
+        ss.chartData = this.mData;
+        ss.dataLines = new ArrayList<>();
+        ss.dataLines.addAll(Arrays.asList(dataLines));
+
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+
+        SavedState ss = (SavedState)state;
+        this.mData = ss.chartData;
+        DateToIntDataLine[] lines = new DateToIntDataLine[ss.dataLines.size()];
+        this.dataLines = ss.dataLines.toArray(lines);
+        restore();
+        super.onRestoreInstanceState(ss.getSuperState());
+    }
+
+    static class SavedState extends BaseSavedState {
+        DateToIntChartData chartData;
+        ArrayList<DateToIntDataLine> dataLines;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.chartData = (DateToIntChartData) in.readBundle().getSerializable("chart_data");
+            this.dataLines = (ArrayList<DateToIntDataLine>) in.readBundle().getSerializable("line_data");
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("chart_data", chartData);
+            bundle.putSerializable("line_data", dataLines);
+            out.writeBundle(bundle);
+        }
+
+        //required field that makes Parcelables from a Parcel
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+    }
 }
