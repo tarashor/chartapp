@@ -1,8 +1,7 @@
 package com.tarashor.chartapp;
 
 import android.app.Application;
-
-import androidx.appcompat.app.AppCompatDelegate;
+import android.support.v7.app.AppCompatDelegate;
 
 public class ChartApp extends Application {
     @Override

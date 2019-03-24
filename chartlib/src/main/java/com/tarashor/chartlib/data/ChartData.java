@@ -3,8 +3,6 @@ import android.graphics.Color;
 
 import java.util.Arrays;
 
-import androidx.core.content.res.TypedArrayUtils;
-
 abstract class ChartData<XType extends Comparable<XType>, YType extends Comparable<YType>> {
     private final XType[] xValues;
     private final Line<YType>[] lines;

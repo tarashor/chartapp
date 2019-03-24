@@ -22,8 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import androidx.annotation.Nullable;
-
 
 public abstract class BaseChartView extends View{
     protected final static int MIN_HEIGHT_CHART_DP = 38;
@@ -386,7 +384,6 @@ public abstract class BaseChartView extends View{
         }
     }
 
-    @Nullable
     @Override
     protected Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();

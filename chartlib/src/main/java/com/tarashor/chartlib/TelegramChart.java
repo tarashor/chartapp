@@ -3,9 +3,6 @@ package com.tarashor.chartlib;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.os.Build;
-import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
@@ -13,9 +10,6 @@ import com.tarashor.chartlib.chart.Chart;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.Date;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 public class TelegramChart extends LinearLayout {
     private DateToIntChartData mData;
@@ -28,23 +22,16 @@ public class TelegramChart extends LinearLayout {
         //initAttrs(null, 0, 0);
     }
 
-    public TelegramChart(Context context, @Nullable AttributeSet attrs) {
+    public TelegramChart(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
         initAttrs(attrs, 0, 0);
     }
 
-    public TelegramChart(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public TelegramChart(Context context,  AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
         initAttrs(attrs, defStyleAttr, 0);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public TelegramChart(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
-        initAttrs(attrs, defStyleAttr, defStyleRes);
     }
 
     private void initAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {

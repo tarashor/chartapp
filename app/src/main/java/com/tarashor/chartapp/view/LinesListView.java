@@ -6,9 +6,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -17,10 +19,6 @@ import com.tarashor.chartapp.R;
 import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.HashMap;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.AppCompatCheckBox;
 
 public class LinesListView  extends LinearLayout {
     private final static String DATA_KEY = "data";
@@ -34,22 +32,15 @@ public class LinesListView  extends LinearLayout {
         init(context);
     }
 
-    public LinesListView(Context context, @Nullable AttributeSet attrs) {
+    public LinesListView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
 
-    public LinesListView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public LinesListView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public LinesListView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
-    }
-
 
     private void init(Context context) {
 
@@ -174,7 +165,7 @@ public class LinesListView  extends LinearLayout {
         }
 
         @Override
-        public boolean equals(@Nullable Object obj) {
+        public boolean equals(Object obj) {
             if (obj instanceof LineState){
                 LineState other = (LineState) obj;
                 return name.equals(other.name);
@@ -188,7 +179,6 @@ public class LinesListView  extends LinearLayout {
         }
     }
 
-    @Nullable
     @Override
     protected Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();

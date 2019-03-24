@@ -1,9 +1,13 @@
 package com.tarashor.chartapp;
 
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ScrollView;
 
 import com.tarashor.chartapp.models.ChartToChartDataConverter;
 import com.tarashor.chartapp.models.TelegramFileData;
@@ -13,15 +17,11 @@ import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.List;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.widget.NestedScrollView;
-
 public class MainActivity extends AppCompatActivity {
 
     private List<TelegramFileData> telegramFileData;
 
-    private NestedScrollView nestedScrollView;
+    private ScrollView nestedScrollView;
 
     private TelegramChart chart1;
     private LinesListView linesListView1;
