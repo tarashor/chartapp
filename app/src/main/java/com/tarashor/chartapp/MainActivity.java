@@ -41,14 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
         chart1 = findViewById(R.id.chart1);
         linesListView1 = findViewById(R.id.checkbox_list1);
-        chart2 = findViewById(R.id.chart2);
-        linesListView2 = findViewById(R.id.checkbox_list2);
-        chart3 = findViewById(R.id.chart3);
-        linesListView3 = findViewById(R.id.checkbox_list3);
-        chart4 = findViewById(R.id.chart4);
-        linesListView4 = findViewById(R.id.checkbox_list4);
-        chart5 = findViewById(R.id.chart5);
-        linesListView5 = findViewById(R.id.checkbox_list5);
+//        chart2 = findViewById(R.id.chart2);
+//        linesListView2 = findViewById(R.id.checkbox_list2);
+//        chart3 = findViewById(R.id.chart3);
+//        linesListView3 = findViewById(R.id.checkbox_list3);
+//        chart4 = findViewById(R.id.chart4);
+//        linesListView4 = findViewById(R.id.checkbox_list4);
+//        chart5 = findViewById(R.id.chart5);
+//        linesListView5 = findViewById(R.id.checkbox_list5);
 
         linesListView1.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
             @Override
@@ -57,33 +57,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        linesListView2.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
-            @Override
-            public void onChange(boolean checked, String name) {
-                chart2.setVisibilityForLine(name, checked);
-            }
-        });
-
-        linesListView3.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
-            @Override
-            public void onChange(boolean checked, String name) {
-                chart3.setVisibilityForLine(name, checked);
-            }
-        });
-
-        linesListView4.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
-            @Override
-            public void onChange(boolean checked, String name) {
-                chart4.setVisibilityForLine(name, checked);
-            }
-        });
-
-        linesListView5.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
-            @Override
-            public void onChange(boolean checked, String name) {
-                chart5.setVisibilityForLine(name, checked);
-            }
-        });
+//        linesListView2.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+//            @Override
+//            public void onChange(boolean checked, String name) {
+//                chart2.setVisibilityForLine(name, checked);
+//            }
+//        });
+//
+//        linesListView3.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+//            @Override
+//            public void onChange(boolean checked, String name) {
+//                chart3.setVisibilityForLine(name, checked);
+//            }
+//        });
+//
+//        linesListView4.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+//            @Override
+//            public void onChange(boolean checked, String name) {
+//                chart4.setVisibilityForLine(name, checked);
+//            }
+//        });
+//
+//        linesListView5.setOnCheckedChangeListener(new LinesListView.CheckedChange() {
+//            @Override
+//            public void onChange(boolean checked, String name) {
+//                chart5.setVisibilityForLine(name, checked);
+//            }
+//        });
 
 
         if(savedInstanceState == null) {
@@ -103,16 +103,16 @@ public class MainActivity extends AppCompatActivity {
         DateToIntChartData chartData5 = chartToChartDataConverter.convert(telegramFileData.get(4));
 
         chart1.setData(chartData1);
-        chart2.setData(chartData2);
-        chart3.setData(chartData3);
-        chart4.setData(chartData4);
-        chart5.setData(chartData5);
+//        chart2.setData(chartData2);
+//        chart3.setData(chartData3);
+//        chart4.setData(chartData4);
+//        chart5.setData(chartData5);
 
         linesListView1.setData(chartData1);
-        linesListView2.setData(chartData2);
-        linesListView3.setData(chartData3);
-        linesListView4.setData(chartData4);
-        linesListView5.setData(chartData5);
+//        linesListView2.setData(chartData2);
+//        linesListView3.setData(chartData3);
+//        linesListView4.setData(chartData4);
+//        linesListView5.setData(chartData5);
     }
 
 
