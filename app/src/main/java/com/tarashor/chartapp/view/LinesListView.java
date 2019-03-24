@@ -97,7 +97,7 @@ public class LinesListView  extends LinearLayout {
         public CheckViewHolder(View itemView, final int key) {
             checkBox = itemView.findViewById(R.id.check_box);
             textView = itemView.findViewById(R.id.check_box_name);
-            checkBox.setId(checkBox.getId() + LinesListView.this.getId() + key);
+            checkBox.setId(checkBox.hashCode());
             this.key = key;
 
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
