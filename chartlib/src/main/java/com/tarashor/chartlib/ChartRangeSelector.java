@@ -5,13 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 
 import java.util.Date;
-
 
 public class ChartRangeSelector extends BaseChartView {
 
@@ -36,7 +35,7 @@ public class ChartRangeSelector extends BaseChartView {
     private float rightPixels;
 
     //private Bitmap bitmap;
-    private GestureDetectorCompat mDetector;
+    private GestureDetector mDetector;
     private DragMode mDragMode = DragMode.NONE;
 
     private OnRangeChangedListener listener;
@@ -70,7 +69,7 @@ public class ChartRangeSelector extends BaseChartView {
         mSelectedBorder.setColor(Color.argb(125, 180, 180, 180));
 
 
-        mDetector = new GestureDetectorCompat(getContext(),new SimpleOnGestureListener(){
+        mDetector = new GestureDetector(getContext(),new SimpleOnGestureListener(){
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
                 moveBy(-distanceX, mDragMode);

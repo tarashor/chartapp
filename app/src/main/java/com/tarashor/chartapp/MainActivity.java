@@ -16,7 +16,6 @@ import com.tarashor.chartlib.data.DateToIntChartData;
 
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity {
 
     private List<TelegramFileData> telegramFileData;

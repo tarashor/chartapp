@@ -5,9 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.graphics.Region;
-import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
@@ -18,6 +16,7 @@ import com.tarashor.chartlib.Utils;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
 
 
 public class Chart extends BaseChartView {
@@ -42,6 +41,7 @@ public class Chart extends BaseChartView {
     private XAxis xAxis;
 
     private float mTopLineOffsetPixels;
+
     private float mPointerCircleRadius;
     private Paint mPointerBorderPaint;
 
