@@ -11,4 +11,8 @@
     <color name="marksTextColor">#96A2AA</color>
     <color name="pointerLineColor">#E5EBEF</color>
 
+    <color name="pointerTextHeaderColor">#222222</color>
+    <color name="pointerPopupBackground">#FFFFFF</color>
+    <color name="pointerPopupBorderColor">#DBDBDB</color>
+
 </resources>

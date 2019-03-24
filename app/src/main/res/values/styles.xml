@@ -12,6 +12,11 @@
         <item name="gridColor">@color/gridColor</item>
         <item name="marksTextColor">@color/marksTextColor</item>
         <item name="pointerLineColor">@color/pointerLineColor</item>
+
+        <item name="pointerTextHeaderColor">@color/pointerTextHeaderColor</item>
+        <item name="pointerPopupBackground">@color/pointerPopupBackground</item>
+        <item name="pointerPopupBorderColor">@color/pointerPopupBorderColor</item>
+
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
 
     </style>

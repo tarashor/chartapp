@@ -119,8 +119,6 @@ public class Chart extends BaseChartView {
         mDescrTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 16));
         mDescrTextPaint.setTextAlign(Paint.Align.LEFT);
 
-//        mPointerBorderPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 3));
-
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
         yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
 
@@ -220,6 +218,7 @@ public class Chart extends BaseChartView {
     @Override
     protected void drawUnderView(Canvas canvas) {
         if (isPressed()) {
+            canvas.save();
             for (int i = 0; i < pointsOut.length; i++) {
                 canvas.clipPath(pointsOut[i], Region.Op.DIFFERENCE);
             }
@@ -244,6 +243,7 @@ public class Chart extends BaseChartView {
                 }
             }
 
+            canvas.restore();
             popup.draw(canvas);
         }
     }

@@ -58,12 +58,12 @@ class PointerPopup {
         this.mValuesTextPaint = mValuesTextPaint;
         this.mDescrTextPaint = mDescrTextPaint;
 
-        mTopBottomMargin = Utils.convertDpToPixel(context, 2);
-        mLeftRightMargin = Utils.convertDpToPixel(context, 4);
+        mTopBottomMargin = Utils.convertDpToPixel(context, 6);
+        mLeftRightMargin = Utils.convertDpToPixel(context, 12);
 
         mHeaderBottomMargin = Utils.convertDpToPixel(context, 5);
         mValueBottomMargin = Utils.convertDpToPixel(context, 2);
-        mValueBetweenMargin = Utils.convertDpToPixel(context, 4);
+        mValueBetweenMargin = Utils.convertDpToPixel(context, 6);
 
         rect = new RectF();
         rect.top = mViewPort.getTopOffsetPixels();
@@ -80,7 +80,7 @@ class PointerPopup {
         
         descrY = valueY + mValueBottomMargin + descrHeight;
         
-        rect.bottom = descrY + mTopBottomMargin + mTopBottomMargin;
+        rect.bottom = descrY + 3*mTopBottomMargin;
 
         headerText = DateValueFormatter.formatHeader(mViewPort.xPixelsToValue(currentPointer));
         
@@ -100,15 +100,20 @@ class PointerPopup {
 
         int numberOfValue = points.size();
 
-        float contentWidth = Math.max(maxColumnPointWidth *numberOfValue + mValueBetweenMargin*(numberOfValue-1),
-                headerWidth);
+        float contentWidth = Math.max(maxColumnPointWidth *numberOfValue +
+                        mValueBetweenMargin*(numberOfValue-1), headerWidth);
 
 
-        //if (currentPointer  - contentWidth / 2 - mLeftRightMargin < 0) rect.left = 0;
-
-
-        rect.left = currentPointer - contentWidth / 2 - mLeftRightMargin;
-        rect.right = rect.left + contentWidth  + 2 * mLeftRightMargin;
+        if (currentPointer  - contentWidth / 2 - mLeftRightMargin - mPopupBorderPaint.getStrokeWidth() < 0){
+            rect.left = mPopupBorderPaint.getStrokeWidth();
+            rect.right = rect.left + contentWidth  + 2 * mLeftRightMargin;
+        } else if (currentPointer  + contentWidth / 2 + mLeftRightMargin > mViewPort.getWidth() - mPopupBorderPaint.getStrokeWidth() ) {
+            rect.right = mViewPort.getWidth() - mPopupBorderPaint.getStrokeWidth();
+            rect.left = rect.right - contentWidth - 2*mLeftRightMargin;
+        } else {
+            rect.left = currentPointer - contentWidth / 2 - mLeftRightMargin;
+            rect.right = rect.left + contentWidth + 2 * mLeftRightMargin;
+        }
 
     }
 
