@@ -1,4 +1,4 @@
-package com.tarashor.chartlib;
+package com.tarashor.chartlib.range;
 
 enum DragMode {
     NONE, LEFT, RIGHT, WHOLE

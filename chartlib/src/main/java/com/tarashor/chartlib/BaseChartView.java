@@ -6,9 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.View;
 
 import com.tarashor.chartlib.data.DataPoint;
@@ -25,15 +25,12 @@ public abstract class BaseChartView extends View{
 
     protected DateToIntChartData mData = null;
 
-    protected Paint mNoDataTextPaint;
-    protected Paint mLinesPaint;
-
-
-
     protected DateToIntDataLine[] dataLines;
-
     protected float[][] lines;
     protected int[] mLineColors;
+
+    protected Paint mNoDataTextPaint;
+    protected Paint mLinesPaint;
 
     protected String mNoDataText = "No data!";
 
@@ -64,8 +61,8 @@ public abstract class BaseChartView extends View{
 
 
     protected void init() {
-//        setWillNotDraw(false);
-//        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        setWillNotDraw(false);
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         viewPortBuilder = new ChartViewPortBuilder();
         viewPortBuilder
@@ -111,15 +108,6 @@ public abstract class BaseChartView extends View{
 
     public void restore(DateToIntChartData data, Date xmin, Date xmax, DateToIntDataLine[] dataLines, Date vxmin, Date vxmax) {
         mData = data;
-//        if(dataLines == null){
-//            mLineColors = new int[mData.getLinesCount()];
-//            dataLines = new DateToIntDataLine[mData.getLinesCount()];
-//            for (int i = 0; i < mData.getLinesCount(); i++){
-//                dataLines[i] = createDataLine(mData, i);
-//                mLineColors[i] = mData.getColor(i);
-//            }
-//        }
-//        calculateXMinAndXMax();
         this.dataLines = new DateToIntDataLine[dataLines.length];
         for (int i = 0; i < dataLines.length; i++) {
             this.dataLines[i] = dataLines[i].copy();

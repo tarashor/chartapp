@@ -1,4 +1,4 @@
-package com.tarashor.chartlib;
+package com.tarashor.chartlib.range;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -9,6 +9,11 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
+
+import com.tarashor.chartlib.Approximator;
+import com.tarashor.chartlib.BaseChartView;
+import com.tarashor.chartlib.ChartViewPort;
+import com.tarashor.chartlib.Utils;
 
 import java.util.Date;
 

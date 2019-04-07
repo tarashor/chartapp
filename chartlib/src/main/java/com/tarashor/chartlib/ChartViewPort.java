@@ -1,11 +1,9 @@
 package com.tarashor.chartlib;
 
 import android.graphics.PointF;
-import android.util.TimeUtils;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class ChartViewPort {
     private final Date xmin;

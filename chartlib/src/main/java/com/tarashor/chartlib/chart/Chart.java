@@ -46,6 +46,8 @@ public class Chart extends BaseChartView {
     private Paint mValuesTextPaint;
     private Paint mDescrTextPaint;
 
+    private boolean isMovingPointer = false;
+
 
     public Chart(Context context) {
         super(context);
@@ -117,10 +119,12 @@ public class Chart extends BaseChartView {
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
         yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
 
+        popup = new PointerPopup(getContext(), mPopupBackgroundPaint, mPopupBorderPaint, mPopupHeaderTextPaint, mValuesTextPaint, mDescrTextPaint);
+
     }
 
     private float currentPointerToDraw;
-    private float currentPointer;
+
     private CountDownTimer timer = new CountDownTimer(100, 100) {
 
 
@@ -135,22 +139,35 @@ public class Chart extends BaseChartView {
         }
     };
 
+    float previousX = -1;
+    float previousY = -1;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         float x = event.getX();
+        float y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                getParent().requestDisallowInterceptTouchEvent(true);
                 setPressed(true);
-                showPointerAt(currentPointer);
+                showPointerAt(x);
                 invalidate();
+                previousX = x;
+                previousY = y;
                 return true;
             case MotionEvent.ACTION_MOVE:
+                if (!isMovingPointer && Math.abs(x - previousX) > Math.abs(y - previousY)) {
+                    isMovingPointer = true;
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                }
                 showPointerAt(x);
+                previousX = x;
+                previousY = y;
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
+                previousX = -1;
+                previousY = -1;
                 setPressed(false);
                 getParent().requestDisallowInterceptTouchEvent(false);
                 hidePointer();
@@ -191,10 +208,7 @@ public class Chart extends BaseChartView {
 
         currentPointerToDraw = viewPort.xValueToPixels(closestDate);
 
-        popup = new PointerPopup(getContext(), currentPointerToDraw, popupValues, viewPort, popupColors,
-        mPopupBackgroundPaint, mPopupBorderPaint, mPopupHeaderTextPaint, mValuesTextPaint, mDescrTextPaint);
-
-
+        popup.setCurrentPointer(currentPointerToDraw, popupValues, popupColors, viewPort);
     }
 
     public void setColorsForPaints(
@@ -264,6 +278,7 @@ public class Chart extends BaseChartView {
         super.setNewViewPort(viewPortBuilder.build());
         xAxis.viewPortChanged(viewPort, xmin, xmax);
         yAxis.viewPortChanged(viewPort);
+        setPressed(false);
     }
 
     private int getRealTop(int yMax, ChartViewPort newViewPort) {

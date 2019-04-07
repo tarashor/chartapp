@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.tarashor.chartlib.chart.Chart;
 import com.tarashor.chartlib.data.DateToIntChartData;
+import com.tarashor.chartlib.range.ChartRangeSelector;
 
 import java.util.Date;
 
