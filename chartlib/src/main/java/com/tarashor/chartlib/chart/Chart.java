@@ -154,6 +154,7 @@ public class Chart extends BaseChartView {
                 invalidate();
                 previousX = x;
                 previousY = y;
+                isMovingPointer = false;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 if (!isMovingPointer && Math.abs(x - previousX) > Math.abs(y - previousY)) {
@@ -168,6 +169,7 @@ public class Chart extends BaseChartView {
             case MotionEvent.ACTION_UP:
                 previousX = -1;
                 previousY = -1;
+                isMovingPointer = false;
                 setPressed(false);
                 getParent().requestDisallowInterceptTouchEvent(false);
                 hidePointer();
