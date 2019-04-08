@@ -1,5 +1,7 @@
 package com.tarashor.chartlib;
 
+import android.animation.TimeInterpolator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -20,7 +22,7 @@ import java.util.Date;
 
 
 
-public abstract class BaseChartView extends View{
+public abstract class BaseChartView extends View implements ValueAnimator.AnimatorUpdateListener {
     protected final static int MIN_HEIGHT_CHART_DP = 38;
 
     protected DateToIntChartData mData = null;
@@ -43,6 +45,7 @@ public abstract class BaseChartView extends View{
 
     protected ChartViewPortBuilder viewPortBuilder;
     private Bitmap bitmap;
+    protected ValueAnimator valueAnimator;
 
     public BaseChartView(Context context) {
         super(context);
@@ -78,6 +81,16 @@ public abstract class BaseChartView extends View{
         mLinesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLinesPaint.setStrokeCap(Paint.Cap.ROUND);
         mLinesPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
+
+        valueAnimator = new ValueAnimator();
+        valueAnimator.setDuration(500);
+        valueAnimator.setInterpolator(new TimeInterpolator() {
+            @Override
+            public float getInterpolation(float input) {
+                return input*input;
+            }
+        });
+        valueAnimator.addUpdateListener(this);
     }
 
 
@@ -166,9 +179,24 @@ public abstract class BaseChartView extends View{
 
     protected void setNewYmaxForViewPort(int yMax) {
         if (yMax != viewPort.getYmax()) {
-            viewPortBuilder.setYmax(yMax);
-            setNewViewPort(viewPortBuilder.build());
+            startYAnimation(yMax);
         }
+    }
+
+    protected void startYAnimation(int yMax) {
+        if (valueAnimator != null){
+            valueAnimator.cancel();
+        }
+
+        valueAnimator.setIntValues(viewPort.getYmax(), yMax);
+        valueAnimator.start();
+    }
+
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+        viewPortBuilder.setYmax((Integer) animation.getAnimatedValue());
+        setNewViewPort(viewPortBuilder.build());
+        invalidate();
     }
 
     protected void setNewViewPort(ChartViewPort newViewPort) {
@@ -349,6 +377,7 @@ public abstract class BaseChartView extends View{
         }
         return -1;
     }
+
 
 
     protected static class DateToIntDataLine implements Serializable {

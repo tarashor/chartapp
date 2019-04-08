@@ -244,11 +244,10 @@ public class Chart extends BaseChartView {
     protected void drawUnderView(Canvas canvas) {
         if (isPressed()) {
             canvas.save();
-            for (int i = 0; i < pointsOut.length; i++) {
-                canvas.clipPath(pointsOut[i], Region.Op.DIFFERENCE);
+            for (Path aPointsOut : pointsOut) {
+                canvas.clipPath(aPointsOut, Region.Op.DIFFERENCE);
             }
         }
-        super.drawUnderView(canvas);
         drawYAxis(canvas);
         drawXAxis(canvas);
     }
@@ -279,7 +278,7 @@ public class Chart extends BaseChartView {
         viewPortBuilder.setYmax(yMax);
         super.setNewViewPort(viewPortBuilder.build());
         xAxis.viewPortChanged(viewPort, xmin, xmax);
-        yAxis.viewPortChanged(viewPort);
+        yAxis.viewPortChangedAndCalculate(viewPort);
         setPressed(false);
     }
 
@@ -317,8 +316,9 @@ public class Chart extends BaseChartView {
     }
 
     protected void drawYAxis(Canvas canvas) {
-        if (yAxis != null)
-            yAxis.draw(canvas);
+        if (yAxis != null){
+            yAxis.draw(canvas, 1);
+        }
     }
 
     @Override

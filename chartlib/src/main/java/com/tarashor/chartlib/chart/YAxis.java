@@ -6,9 +6,6 @@ import android.graphics.Rect;
 
 import com.tarashor.chartlib.ChartViewPort;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class YAxis {
     private static final int GRID_HORIZONTAL_LINE_COUNT = 6;
     private float mTopLineOffsetPixels;
@@ -16,12 +13,10 @@ class YAxis {
     private final Paint mTextPaint;
     private IntegerValueFormatter mIntegerValueFormatter;
 
-    private List<AxisMark> newTicks;
-    private List<AxisMark> currentTicks;
     private int textHeight;
-    private ChartViewPort newViewPort;
-    private ChartViewPort oldViewPort;
-
+    private ChartViewPort viewPort;
+    private float bottomY;
+    private float delta;
 
     public YAxis(float topLineOffsetPixels, Paint gridPaint, Paint textPaint, IntegerValueFormatter integerValueFormatter) {
         mTopLineOffsetPixels = topLineOffsetPixels;
@@ -36,49 +31,20 @@ class YAxis {
     }
 
 
-    public void viewPortChanged(ChartViewPort viewPort) {
-        newViewPort = viewPort;
-
-//        if (viewPort != null && viewPort.isValid()){
-//
-//            float bottomY = viewPort.getHeight() - viewPort.getBottomOffsetPixels();
-//            float delta = (bottomY  - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
-//
-//            newTicks = new ArrayList<>();
-//            for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
-//                float y = bottomY - delta * i;
-//                int v = viewPort.yPixelsToValue(y);
-//                AxisMark tick = new AxisMark(mIntegerValueFormatter.format(v), 0, y);
-//                newTicks.add(tick);
-//            }
-//        }
+    public void viewPortChangedAndCalculate(ChartViewPort viewPort) {
+        this.viewPort = viewPort;
+        bottomY = viewPort.getHeight() - viewPort.getBottomOffsetPixels();
+        delta = (bottomY - viewPort.getTopOffsetPixels() - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
     }
 
-    public void draw(Canvas canvas) {
-//        if (currentTicks != null) {
-//            for (AxisMark tick : currentTicks) {
-//                float y = tick.getPixelOffsetY();
-//                canvas.drawLine(0, y, mViewPort.getWidth(), y, mGridPaint);
-//                canvas.drawText(tick.getText(), 0, y + textHeight + 10, mTextPaint);
-//            }
-//        }
-//
-//        if (newTicks != null) {
-//            for (AxisMark tick : newTicks) {
-//                float y = tick.getPixelOffsetY();
-//                canvas.drawLine(0, y, mViewPort.getWidth(), y, mGridPaint);
-//                canvas.drawText(tick.getText(), 0, y + textHeight + 10, mTextPaint);
-//            }
-//        }
-
-        float bottomY = newViewPort.getHeight() - newViewPort.getBottomOffsetPixels();
-        float delta = (bottomY - newViewPort.getTopOffsetPixels() - mTopLineOffsetPixels) / (GRID_HORIZONTAL_LINE_COUNT - 1);
-
+    public void draw(Canvas canvas, float animationFactor) {
         //newTicks = new ArrayList<>();
         for (int i = 0; i < GRID_HORIZONTAL_LINE_COUNT; i++) {
             float y = bottomY - delta * i;
-            int v = newViewPort.yPixelsToValue(y);
-            canvas.drawLine(0, y, newViewPort.getWidth(), y, mGridPaint);
+            int v = viewPort.yPixelsToValue(y);
+            mGridPaint.setAlpha((int) (255 * animationFactor));
+            mTextPaint.setAlpha((int) (255 * animationFactor));
+            canvas.drawLine(0, y, viewPort.getWidth(), y, mGridPaint);
             canvas.drawText(mIntegerValueFormatter.format(v), 0, y + textHeight + 10, mTextPaint);
         }
     }
