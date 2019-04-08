@@ -76,6 +76,7 @@ public abstract class BaseChartView extends View{
         mNoDataTextPaint.setTextSize(Utils.convertDpToPixel(getContext(), 16));
 
         mLinesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mLinesPaint.setStrokeCap(Paint.Cap.ROUND);
         mLinesPaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
     }
 
@@ -392,11 +393,7 @@ public abstract class BaseChartView extends View{
             long diffAfter = after.getTime() - date.getTime();
             long diffBefore = date.getTime() - before.getTime();
             if (diffAfter < diffBefore) return points[index];
-//
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.setTimeInMillis((before.getTime() + after.getTime())/2);
-//            Date midde = calendar.getTime();
-//            if (date.after(midde)) return points[index];
+
             return points[index-1];
         }
     }
