@@ -117,7 +117,7 @@ public class Chart extends BaseChartView {
         mDescrTextPaint.setTextAlign(Paint.Align.LEFT);
 
         xAxis = new XAxis(mXTextPaint, new DateValueFormatter(), this);
-        yAxis = new YAxis(mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
+        yAxis = new YAxis(this, mTopLineOffsetPixels, mGridPaint, mYTextPaint, new IntegerValueFormatter());
 
         popup = new PointerPopup(getContext(), mPopupBackgroundPaint, mPopupBorderPaint, mPopupHeaderTextPaint, mValuesTextPaint, mDescrTextPaint);
 

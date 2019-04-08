@@ -168,6 +168,7 @@ public abstract class BaseChartView extends View{
         if (yMax != viewPort.getYmax()) {
             viewPortBuilder.setYmax(yMax);
             setNewViewPort(viewPortBuilder.build());
+
         }
     }
 
