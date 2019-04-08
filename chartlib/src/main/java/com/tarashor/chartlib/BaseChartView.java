@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -28,6 +29,7 @@ public abstract class BaseChartView extends View{
     protected DateToIntDataLine[] dataLines;
     protected float[][] lines;
     protected int[] mLineColors;
+    protected Path[] paths;
 
     protected Paint mNoDataTextPaint;
     protected Paint mLinesPaint;
@@ -174,6 +176,7 @@ public abstract class BaseChartView extends View{
         if (viewPort.isValid()) {
             for (int i = 0; i < lines.length; i++) {
                 lines[i] = recalculateLineToDraw(lines[i], newViewPort);
+                paths[i] = createPath(lines[i]);
             }
             viewPort = newViewPort;
         } else {
@@ -190,11 +193,11 @@ public abstract class BaseChartView extends View{
         if (bitmap != null) {
             bitmap.eraseColor(Color.TRANSPARENT);
             Canvas canvas = new Canvas(bitmap);
-            if (lines != null) {
-                for (int i = 0; i < lines.length; i++) {
-                    if (lines[i] != null && dataLines[i] != null && dataLines[i].isVisible) {
+            if (paths != null) {
+                for (int i = 0; i < paths.length; i++) {
+                    if (paths[i] != null && dataLines[i] != null && dataLines[i].isVisible) {
                         mLinesPaint.setColor(mLineColors[i]);
-                        canvas.drawLines(lines[i], mLinesPaint);
+                        canvas.drawPath(paths[i], mLinesPaint);
                     }
                 }
             }
@@ -233,10 +236,21 @@ public abstract class BaseChartView extends View{
     }
 
     protected void initAllLinesToDraw() {
+        paths = new Path[dataLines.length];
         lines = new float[dataLines.length][];
         for (int i = 0; i < dataLines.length; i++) {
             lines[i] = convertPointsToLine(dataLines[i].points);
+            paths[i] = createPath(lines[i]);
         }
+    }
+
+    private Path createPath(float[] line) {
+        Path path = new Path();
+        path.moveTo(line[0], line[1]);
+        for (int i = 1; i < line.length / 2; i++){
+            path.lineTo(line[2*i], line[2*i + 1]);
+        }
+        return path;
     }
 
     protected float[] recalculateLineToDraw(float[] line, ChartViewPort chartViewPort) {
@@ -253,18 +267,12 @@ public abstract class BaseChartView extends View{
 
 
     protected float[] convertPointsToLine(DateToIntDataPoint[] points) {
-
-        float[] line = new float[(points.length - 1) * 4];
-
-        for (int i = 0; i < points.length - 1; i++){
-            line[4 * i] = viewPort.xValueToPixels(points[i].getX());
-            line[4 * i + 1] = viewPort.yValueToPixels(points[i].getY());
-            line[4 * i + 2] = viewPort.xValueToPixels(points[i + 1].getX());
-            line[4 * i + 3] = viewPort.yValueToPixels(points[i + 1].getY());
+        float[] line = new float[points.length * 2];
+        for (int i = 0; i < points.length; i++) {
+            line[2 * i] = viewPort.xValueToPixels(points[i].getX());
+            line[2 * i + 1] = viewPort.yValueToPixels(points[i].getY());
         }
-
         return line;
-
     }
 
     public void clear() {
@@ -392,11 +400,7 @@ public abstract class BaseChartView extends View{
             long diffAfter = after.getTime() - date.getTime();
             long diffBefore = date.getTime() - before.getTime();
             if (diffAfter < diffBefore) return points[index];
-//
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.setTimeInMillis((before.getTime() + after.getTime())/2);
-//            Date midde = calendar.getTime();
-//            if (date.after(midde)) return points[index];
+
             return points[index-1];
         }
     }
