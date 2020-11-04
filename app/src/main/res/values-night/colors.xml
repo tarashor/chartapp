@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#232D3A</color>
+    <color name="windowBackground">#1F2732</color>
+    <color name="colorPrimaryDark">#1C242D</color>
+    <color name="chart_lines_name_color">#FFFFFF</color>
+
+    <color name="gridColor">#161F2B</color>
+    <color name="marksTextColor">#506372</color>
+    <color name="pointerLineColor">#131C26</color>
+
+    <color name="pointerTextHeaderColor">#E5EFF5</color>
+    <color name="pointerPopupBackground">#202B38</color>
+    <color name="pointerPopupBorderColor">#18222C</color>
+
+</resources>

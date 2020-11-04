@@ -2,6 +2,8 @@ package com.tarashor.chartlib;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
@@ -12,6 +14,9 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+        int[] a = new int[]{1,2,5,10,40,50};
+
+        assertEquals(2, Arrays.binarySearch(a, 5));
+        assertEquals(4, -Arrays.binarySearch(a, 11) - 1);
     }
 }

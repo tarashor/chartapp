@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#5B7C9F</color>
+    <color name="colorPrimaryDark">#49627F</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="chart_title_color">#8CC3F7</color>
+    <color name="chart_lines_name_color">#000000</color>
+
+    <color name="gridColor">#F1F1F2</color>
+    <color name="marksTextColor">#96A2AA</color>
+    <color name="pointerLineColor">#E5EBEF</color>
+
+    <color name="pointerTextHeaderColor">#222222</color>
+    <color name="pointerPopupBackground">#FFFFFF</color>
+    <color name="pointerPopupBorderColor">#DBDBDB</color>
+
 </resources>

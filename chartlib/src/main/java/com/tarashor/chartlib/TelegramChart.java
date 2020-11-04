@@ -1,158 +1,200 @@
 package com.tarashor.chartlib;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PointF;
+import android.content.res.TypedArray;
+import android.graphics.Color;
+
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+
 import android.util.AttributeSet;
+import android.widget.LinearLayout;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import com.tarashor.chartlib.chart.Chart;
+import com.tarashor.chartlib.data.DateToIntChartData;
+import com.tarashor.chartlib.range.ChartRangeSelector;
 
-public class TelegramChart extends Chart<DateToIntChartData> {
-    private float[] line;
-    private Matrix transformToScreenMatrix;
-    private Matrix transformToRealMatrix;
-    private Paint linePaint;
-    private float xmin;
-    private float xmax;
-    private float ymin;
-    private float ymax;
+import java.util.Date;
 
-    private float topRealOffset;
-    private float topPixelsOffset;
 
-    private YAxis yAxis;
+public class TelegramChart extends LinearLayout {
+    private DateToIntChartData mData;
+    private Chart chart;
+    private ChartRangeSelector rangeSelector;
 
     public TelegramChart(Context context) {
         super(context);
+        init(context);
+        //initAttrs(null, 0, 0);
     }
 
-    public TelegramChart(Context context, AttributeSet attrs) {
+    public TelegramChart(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
+        initAttrs(attrs, 0, 0);
     }
 
-    public TelegramChart(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public TelegramChart(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+        initAttrs(attrs, defStyleAttr, 0);
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        linePaint.setStrokeWidth(Utils.convertDpToPixel(getContext(), 2));
-
-        topPixelsOffset = Utils.convertDpToPixel(getContext(), AXIS_TEXT_AREA_HEIGHT_DP);
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public TelegramChart(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init(context);
+        initAttrs(attrs, defStyleAttr, defStyleRes);
     }
 
+    private void initAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        // Load attributes
+        final TypedArray a = getContext().obtainStyledAttributes(
+                attrs, R.styleable.TelegramChart, defStyleAttr, defStyleRes);
 
-    @Override
-    public void notifyDataSetChanged() {
-        if (!isEmpty()) {
-            line = convertPointsToLine(mData.getPoints(0));
-            linePaint.setColor(mData.getColor(0));
-        }
+        int gridColor = a.getColor(R.styleable.TelegramChart_gridColor, Color.GRAY);
+        int marksTextColor = a.getColor(R.styleable.TelegramChart_marksTextColor, Color.GRAY);
+        int pointerLineColor = a.getColor(R.styleable.TelegramChart_pointerLineColor, Color.GRAY);
+        int pointerPopupBackground = a.getColor(R.styleable.TelegramChart_pointerPopupBackground, Color.WHITE);
+        int pointerPopupBorderColor = a.getColor(R.styleable.TelegramChart_pointerPopupBorderColor, Color.GRAY);
+        int pointerTextHeaderColor = a.getColor(R.styleable.TelegramChart_pointerTextHeaderColor, Color.BLACK);
 
-        yAxis = new YAxis(ymin, ymax,
-                getChartAreaWidth(), getChartAreaBottom(), topPixelsOffset,
-                mGridPaint, mTextPaint);
+        a.recycle();
 
-        invalidate();
-    }
-
-    @Override
-    protected void calculateOffsets() {
-
-    }
-
-    @Override
-    protected void calcMinMax() {
-        xmin = mData.convertXtoFloat(mData.getXMin());
-        xmax = mData.convertXtoFloat(mData.getXMax());
-        ymin = 0;//mData.convertYtoFloat(mData.getYMin(0));
-        ymax = getRealTop(mData.getYMax(0));
-
-    }
-
-    private float getRealTop(int yMax) {
-        int div = 10;
-        int preDiv = 1;
-
-        while (yMax % div <=  (yMax / div * div) * topPixelsOffset / (getChartAreaBottom() - topPixelsOffset)) {
-            preDiv = div;
-            div *= 10;
-        }
-
-        int maxHorizontalLine = yMax / preDiv * preDiv;
-        if (preDiv == 1) maxHorizontalLine = (yMax / 10 + 1)* 10;
-
-        topRealOffset = maxHorizontalLine * topPixelsOffset / (getChartAreaBottom() - topPixelsOffset);
-
-        return maxHorizontalLine + topRealOffset;
+        chart.setColorsForPaints(gridColor,
+                marksTextColor,
+                pointerLineColor,
+                pointerTextHeaderColor,
+                pointerPopupBackground,
+                pointerPopupBorderColor);
 
     }
 
 
-    private float[] convertPointsToLine(PointF[] points) {
-        Arrays.sort(points, new Comparator<PointF>() {
+    private void init(Context context) {
+        inflate(context, R.layout.telegram_chart_layout,this);
+        chart = findViewById(R.id.telegram_chart_view);
+        rangeSelector = findViewById(R.id.telegram_range_view);
+        //chart.setId(View.generateViewId());
+        //rangeSelector.setId(View.generateViewId());
+        rangeSelector.setListener(new ChartRangeSelector.OnRangeChangedListener() {
             @Override
-            public int compare(PointF o1, PointF o2) {
-                return Float.compare(o1.x, o2.x);
+            public void onRangeChanged(ChartRangeSelector v, Date start, Date end) {
+                chart.setRange(start, end);
             }
         });
+    }
 
-        float[] line = new float[(points.length - 1) * 2 * 2];
+    public void setData(DateToIntChartData data){
+        mData = data;
+        chart.setData(data);
+        rangeSelector.setData(data);
+    }
 
-        for (int i = 0; i < points.length - 1; i++){
-            PointF start = convertToLocalCoordinates(points[i]);
-            PointF end = convertToLocalCoordinates(points[i + 1]);
-            line[4 * i] = start.x;
-            line[4 * i + 1] = start.y;
-            line[4 * i + 2] = end.x;
-            line[4 * i + 3] = end.y;
+    public void setVisibilityForLine(String lineName, boolean isVisible){
+        chart.setVisibilityForLine(lineName, isVisible);
+        rangeSelector.setVisibilityForLine(lineName, isVisible);
+    }
+
+
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+        //end
+
+        ss.chartData = this.mData;
+        ss.vxmin = chart.getXRange().first;//viewPort.getXmin();
+        ss.vxmax = chart.getXRange().second;
+        //ss.dataLines = new ArrayList<>();
+        ss.dataLines = chart.dataLines;
+        ss.xmin = chart.xmin;
+        ss.xmax = chart.xmax;
+        ss.start = rangeSelector.start;
+        ss.end = rangeSelector.end;
+
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
         }
 
-        return line;
+
+        SavedState ss = (SavedState)state;
+        this.mData = ss.chartData;
+        chart.restore(mData, ss.xmin, ss.xmax, ss.dataLines, ss.vxmin, ss.vxmax);
+        rangeSelector.start = ss.start;
+        rangeSelector.end = ss.end;
+        rangeSelector.restore(mData, ss.xmin, ss.xmax, ss.dataLines, null, null);
+
+        super.onRestoreInstanceState(ss.getSuperState());
     }
 
-    @Override
-    protected void calculateTransformMatrix() {
-        transformToScreenMatrix = new Matrix();
-        transformToScreenMatrix.setTranslate(-xmin, -ymin);
-        float sx = getChartAreaWidth() / (xmax - xmin) ;
-        float sy = getChartAreaBottom() / (ymax - ymin);
-        transformToScreenMatrix.postScale(sx, -sy);
-        transformToScreenMatrix.postTranslate(0, getChartAreaBottom());
-
-//        transformToRealMatrix = new Matrix();
-//        transformToRealMatrix.invert(transformToScreenMatrix);
-    }
-
-    private PointF convertToLocalCoordinates(PointF point) {
-        float[] screenPoint = new float[2];
-        transformToScreenMatrix.mapPoints(screenPoint, new float[]{point.x, point.y});
-        return new PointF(screenPoint[0], screenPoint[1]);
-    }
-
-    private PointF convertToRealCoordinates(PointF point) {
-        float[] realPoint = new float[2];
-        transformToRealMatrix.mapPoints(realPoint, new float[]{point.x, point.y});
-        return new PointF(realPoint[0], realPoint[1]);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
 
 
-        if (line != null) {
-            canvas.drawLines(line, linePaint);
+    static class SavedState extends BaseSavedState {
+        DateToIntChartData chartData;
+        Date xmin;
+        Date xmax;
+        BaseChartView.DateToIntDataLine[] dataLines;
+        Date vxmin;
+        Date vxmax;
+        Date start;
+        Date end;
+
+        SavedState(Parcelable superState) {
+            super(superState);
         }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.chartData = (DateToIntChartData) in.readBundle().getSerializable("chart_data");
+            this.xmin = (Date) in.readBundle().getSerializable("chart_xmin");
+            this.xmax = (Date) in.readBundle().getSerializable("chart_xmax");
+            this.dataLines = (BaseChartView.DateToIntDataLine[]) in.readBundle().getSerializable("line_data");
+            this.vxmin = (Date) in.readBundle().getSerializable("line_vxmin");
+            this.vxmax = (Date) in.readBundle().getSerializable("line_vxmax");
+            this.start = (Date) in.readBundle().getSerializable("line_start");
+            this.end = (Date) in.readBundle().getSerializable("line_end");
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("chart_data", chartData);
+            bundle.putSerializable("chart_xmin", xmin);
+            bundle.putSerializable("chart_xmax", xmax);
+            bundle.putSerializable("line_data", dataLines);
+            bundle.putSerializable("line_vxmin", vxmin);
+            bundle.putSerializable("line_vxmax", vxmax);
+            bundle.putSerializable("line_start", start);
+            bundle.putSerializable("line_end", end);
+            out.writeBundle(bundle);
+        }
+
+        //required field that makes Parcelables from a Parcel
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
     }
 
-    @Override
-    protected void drawYAxis(Canvas canvas) {
-        yAxis.draw(canvas);
-    }
+
 }

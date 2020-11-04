@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Chart App</string>
+    <string name="chart_title_color">Followers</string>
 </resources>
